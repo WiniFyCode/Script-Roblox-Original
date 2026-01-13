@@ -1,0 +1,4 @@
+workspace.NPCs.Thief3.Humanoid
+-> trong đó Thief3 là 1 NPC
+
+game:GetService("ReplicatedStorage"):WaitForChild("CombatSystem"):WaitForChild("Remotes"):WaitForChild("RequestHit"):FireServer()

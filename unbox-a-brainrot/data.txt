@@ -1,0 +1,18 @@
+-- Plot của player :
+game:GetService("Players").LocalPlayer.Plot
+
+-- Get crate trong plot :
+workspace.Map.Bases["1"].Crate["Scrappers Crate"]
+
+-> trong đó 1 là vị trí base của player, Scrappers Crate tên của crate trong thư mục Crate
+
+-- Hit crate :
+local args = {
+	99
+}
+workspace:WaitForChild("Map"):WaitForChild("Bases"):WaitForChild("1"):WaitForChild("Crate"):WaitForChild("Toxic Crate"):WaitForChild("InsideCrate"):WaitForChild("Hit"):FireServer(unpack(args))
+
+-> trong đó; 99 là số dame gây ra với crate
+
+-- Collect Cash:
+workspace.Map.Bases["1"].Collectors["2"].touch.TouchInterest
