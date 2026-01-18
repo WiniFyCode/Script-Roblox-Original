@@ -74,6 +74,7 @@ Config.unloadKey = Enum.KeyCode.End -- Unload script
 -- 🔹 Teleport Settings
 -- Mặc định tắt, chỉ hoạt động khi bạn bật trong menu
 Config.teleportEnabled = true
+Config.chestTeleportDelay = 0.5 -- Thời gian delay giữa các chest teleport (giây)
 Config.cameraTeleportEnabled = false
 Config.cameraTeleportActive = false
 Config.teleportToLastZombie = false

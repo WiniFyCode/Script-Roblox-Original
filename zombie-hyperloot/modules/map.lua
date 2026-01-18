@@ -152,6 +152,23 @@ function Map.replayCurrentMatch()
     end)
 end
 
+-- Teleport tới game chính (hub)
+function Map.teleportToMainGame()
+    if Config.scriptUnloaded then return end
+
+    local TeleportService = game:GetService("TeleportService")
+    local mainPlaceId = 100822312246972
+
+    local ok, err = pcall(function()
+        TeleportService:Teleport(mainPlaceId, Config.localPlayer)
+    end)
+
+    if not ok then
+        warn("[MapTeleport] Failed to teleport to main game:", err)
+    end
+end
+
+
 ----------------------------------------------------------
 -- 🔹 Supply ESP Functions
 function Map.findAllSupplies()

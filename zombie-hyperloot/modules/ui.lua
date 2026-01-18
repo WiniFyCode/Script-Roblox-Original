@@ -40,7 +40,7 @@ function UI.createWindow()
     
     UI.Window = UI.Library:CreateWindow({
         Title = "Zombie Hyperloot",
-        Footer = "by WiniFy",
+        Footer = "by WiniFy | version: 1.9.9",
         NotifySide = "Right",
         ShowCustomCursor = true,
     })
@@ -53,8 +53,26 @@ function UI.createChangelogTab()
     
     local ChangelogGroup = ChangelogTab:AddLeftGroupbox("Version History", "history")
     
-    -- Version 1.1.0
-    ChangelogGroup:AddLabel("Version 1.1.0 - " .. os.date("%B %d, %Y"), true)
+    -- Version 1.9.9 - Chest Teleport Improvements
+    ChangelogGroup:AddLabel("Version 1.9.9 - " .. os.date("%B %d, %Y"), true)
+    ChangelogGroup:AddLabel("• Added adjustable delay slider for chest teleport\n• Increased default chest teleport delay from 0.25s to 0.5s\n• Better control over teleport timing for improved stability", true)
+    
+    ChangelogGroup:AddDivider()
+    
+    -- Version 1.9.8 - UI Restructure
+    ChangelogGroup:AddLabel("Version 1.9.8 - " .. os.date("%B %d, %Y"), true)
+    ChangelogGroup:AddLabel("• Restructured UI tabs for better usability\n• Merged Combat + ESP into \"Combat & ESP\" tab\n• Merged Movement + Map into \"Movement & Map\" tab\n• Merged Farm + Event into \"Farm & Event\" tab\n• Merged Visuals + HUD into \"Visuals & HUD\" tab\n• Separated Changelog into its own tab\n• Reduced from 12 tabs to 8 tabs for easier navigation", true)
+    
+    ChangelogGroup:AddDivider()
+    
+    -- Version 1.9.7 - Map & Server improvements
+    ChangelogGroup:AddLabel("Version 1.9.7 - " .. os.date("%B %d, %Y"), true)
+    ChangelogGroup:AddLabel("• Add button Teleport to Main Game in Map tab", true)
+    
+    ChangelogGroup:AddDivider()
+    
+    -- Version 1.9.6 - Removed NoClip feature
+    ChangelogGroup:AddLabel("Version 1.9.6 - " .. os.date("%B %d, %Y"), true)
     ChangelogGroup:AddLabel("• Removed NoClip feature\n• Improved performance\n• Bug fixes and optimizations", true)
     
     ChangelogGroup:AddDivider()
@@ -64,9 +82,25 @@ function UI.createChangelogTab()
     ChangelogGroup:AddLabel("• Aimbot with FOV circle\n• ESP for Zombies, Players, Chests\n• Auto Farm features\n• Camera Teleport\n• Speed boost\n• Auto Skills for all characters\n• Map selection\n• And much more!", true)
     
     local InfoGroup = ChangelogTab:AddRightGroupbox("Information", "info")
-    InfoGroup:AddLabel("Script: Zombie Hyperloot\nAuthor: WiniFy\nDiscord: comming soon!!!", true)
+
+    InfoGroup:AddLabel("Script: Zombie Hyperloot\nAuthor: WiniFy", true)
+    InfoGroup:AddLabel("If you have any questions, suggestions or bugs, please report them here:", true)
+    
+    InfoGroup:AddButton({
+        Text = "Copy Discord Server",
+        Func = function()
+            setclipboard("https://discord.gg/2vdHSbdy")
+            if UI.Library then
+                UI.Library:Notify({
+                    Title = "Discord",
+                    Description = "Discord server link copied to clipboard!",
+                    Time = 2,
+                })
+            end
+        end,
+    })
 end
-ư
+
 ----------------------------------------------------------
 -- 🔹 Server Tab
 function UI.createServerTab()
@@ -376,12 +410,13 @@ function UI.createServerTab()
     return ServerTab
 end
 
-
 ----------------------------------------------------------
--- 🔹 Combat Tab
-function UI.createCombatTab()
-    local CombatTab = UI.Window:AddTab("Combat", "sword")
-    local CombatLeftGroup = CombatTab:AddLeftGroupbox("Combat")
+-- 🔹 Combat & ESP Tab (Merged)
+function UI.createCombatESPTab()
+    local CombatESPTab = UI.Window:AddTab("Combat & ESP", "sword")
+    
+    -- Left Groupbox: Combat
+    local CombatLeftGroup = CombatESPTab:AddLeftGroupbox("Combat")
 
     CombatLeftGroup:AddToggle("Aimbot", {
         Text = "Aimbot",
@@ -533,12 +568,9 @@ function UI.createCombatTab()
         Callback = function(Value) Config.aimbotPrediction = Value end
     })
 
-    -- Right Groupbox
-    local CombatRightGroup = CombatTab:AddRightGroupbox("Combat Settings")
+    CombatLeftGroup:AddDivider()
 
-    CombatRightGroup:AddDivider()
-
-    CombatRightGroup:AddToggle("Hitbox", {
+    CombatLeftGroup:AddToggle("Hitbox", {
         Text = "Hitbox Expander",
         Default = Config.hitboxEnabled,
         Callback = function(Value)
@@ -554,7 +586,7 @@ function UI.createCombatTab()
         end
     })
 
-    CombatRightGroup:AddToggle("FiringRangePriority", {
+    CombatLeftGroup:AddToggle("FiringRangePriority", {
         Text = "Target Dummies",
         Tooltip = "Enable: auto skill prioritizes dummies in Map.FiringRange",
         Default = Config.firingRangePriorityEnabled,
@@ -570,7 +602,7 @@ function UI.createCombatTab()
         end
     })
 
-    CombatRightGroup:AddSlider("HitboxSize", {
+    CombatLeftGroup:AddSlider("HitboxSize", {
         Text = "Hitbox Size",
         Default = 4, Min = 1, Max = 20, Rounding = 1,
         Callback = function(Value)
@@ -578,9 +610,9 @@ function UI.createCombatTab()
         end
     })
 
-    CombatRightGroup:AddDivider()
+    CombatLeftGroup:AddDivider()
 
-    CombatRightGroup:AddToggle("TrigerSkillDupeEnabled", {
+    CombatLeftGroup:AddToggle("TrigerSkillDupeEnabled", {
         Text = "Enable TrigerSkill Dupe",
         Default = Config.trigerSkillDupeEnabled,
         Callback = function(Value)
@@ -595,16 +627,16 @@ function UI.createCombatTab()
         end
     })
 
-    CombatRightGroup:AddSlider("TrigerSkillDupeCount", {
+    CombatLeftGroup:AddSlider("TrigerSkillDupeCount", {
         Text = "Dupe Count",
         Default = Config.trigerSkillDupeCount,
         Min = 1, Max = 20, Rounding = 0,
         Callback = function(Value) Config.trigerSkillDupeCount = Value end
     })
 
-    CombatRightGroup:AddDivider()
+    CombatLeftGroup:AddDivider()
 
-    CombatRightGroup:AddToggle("AutoRotate", {
+    CombatLeftGroup:AddToggle("AutoRotate", {
         Text = "Aimbot 360°",
         Tooltip = "Enable feature, then press L in-game to toggle",
         Default = Config.autoRotateEnabled,
@@ -627,7 +659,7 @@ function UI.createCombatTab()
         end
     })
 
-    CombatRightGroup:AddSlider("AutoRotateSmoothness", {
+    CombatLeftGroup:AddSlider("AutoRotateSmoothness", {
         Text = "Rotation Smoothness",
         Tooltip = "0 = Instant Lock | Higher = Smoother/Slower",
         Default = Config.autoRotateSmoothness,
@@ -638,20 +670,13 @@ function UI.createCombatTab()
         end
     })
 
-    return CombatTab
-end
+    -- Right Groupbox: ESP
+    local ESPRightGroup = CombatESPTab:AddRightGroupbox("ESP")
 
+    ESPRightGroup:AddDivider()
+    ESPRightGroup:AddLabel("Zombie ESP")
 
-----------------------------------------------------------
--- 🔹 ESP Tab
-function UI.createESPTab()
-    local ESPTab = UI.Window:AddTab("ESP", "eye")
-    local ESPLeftGroup = ESPTab:AddLeftGroupbox("ESP")
-
-    ESPLeftGroup:AddDivider()
-    ESPLeftGroup:AddLabel("Zombie ESP")
-
-    ESPLeftGroup:AddToggle("ESPZombie", {
+    ESPRightGroup:AddToggle("ESPZombie", {
         Text = "ESP Zombie",
         Default = Config.espZombieEnabled,
         Callback = function(Value)
@@ -672,13 +697,13 @@ function UI.createESPTab()
         end
     })
 
-    ESPLeftGroup:AddLabel("Zombie ESP Color"):AddColorPicker("ESPZombieColor", {
+    ESPRightGroup:AddLabel("Zombie ESP Color"):AddColorPicker("ESPZombieColor", {
         Default = Config.espColorZombie,
         Title = "Zombie ESP Color",
         Callback = function(Value) Config.espColorZombie = Value end
     })
 
-    ESPLeftGroup:AddToggle("ESPZombieBoxes", {
+    ESPRightGroup:AddToggle("ESPZombieBoxes", {
         Text = "Zombie Boxes",
         Default = Config.espZombieBoxes,
         Callback = function(Value)
@@ -693,7 +718,7 @@ function UI.createESPTab()
         end
     })
 
-    ESPLeftGroup:AddToggle("ESPZombieTracers", {
+    ESPRightGroup:AddToggle("ESPZombieTracers", {
         Text = "Zombie Tracers",
         Default = Config.espZombieTracers,
         Callback = function(Value)
@@ -708,7 +733,7 @@ function UI.createESPTab()
         end
     })
 
-    ESPLeftGroup:AddToggle("ESPZombieNames", {
+    ESPRightGroup:AddToggle("ESPZombieNames", {
         Text = "Zombie Names",
         Default = Config.espZombieNames,
         Callback = function(Value)
@@ -723,7 +748,7 @@ function UI.createESPTab()
         end
     })
 
-    ESPLeftGroup:AddToggle("ESPZombieHealth", {
+    ESPRightGroup:AddToggle("ESPZombieHealth", {
         Text = "Zombie Health Bars",
         Default = Config.espZombieHealth,
         Callback = function(Value)
@@ -738,7 +763,7 @@ function UI.createESPTab()
         end
     })
 
-    ESPLeftGroup:AddToggle("ESPZombieHighlight", {
+    ESPRightGroup:AddToggle("ESPZombieHighlight", {
         Text = "Zombie Highlight",
         Default = Config.espZombieHighlight,
         Callback = function(Value)
@@ -758,10 +783,10 @@ function UI.createESPTab()
         end
     })
 
-    ESPLeftGroup:AddDivider()
-    ESPLeftGroup:AddLabel("Chest ESP")
+    ESPRightGroup:AddDivider()
+    ESPRightGroup:AddLabel("Chest ESP")
 
-    ESPLeftGroup:AddToggle("ESPChest", {
+    ESPRightGroup:AddToggle("ESPChest", {
         Text = "ESP Chest",
         Default = Config.espChestEnabled,
         Callback = function(Value)
@@ -777,7 +802,7 @@ function UI.createESPTab()
         end
     })
 
-    ESPLeftGroup:AddLabel("Chest ESP Color"):AddColorPicker("ESPChestColor", {
+    ESPRightGroup:AddLabel("Chest ESP Color"):AddColorPicker("ESPChestColor", {
         Default = Config.espColorChest,
         Title = "Chest ESP Color",
         Callback = function(Value)
@@ -785,9 +810,6 @@ function UI.createESPTab()
             ESP.refreshChestHighlights(Value)
         end
     })
-
-    -- Right Groupbox
-    local ESPRightGroup = ESPTab:AddRightGroupbox("Player ESP")
 
     ESPRightGroup:AddDivider()
     ESPRightGroup:AddLabel("Player ESP")
@@ -910,15 +932,16 @@ function UI.createESPTab()
         end
     })
 
-
-    return ESPTab
+    return CombatESPTab
 end
 
 ----------------------------------------------------------
--- 🔹 Movement Tab
-function UI.createMovementTab()
-    local MovementTab = UI.Window:AddTab("Movement", "move")
-    local MovementLeftGroup = MovementTab:AddLeftGroupbox("Movement")
+-- 🔹 Movement & Map Tab (Merged)
+function UI.createMovementMapTab()
+    local MovementMapTab = UI.Window:AddTab("Movement & Map", "move")
+    
+    -- Left Groupbox: Movement
+    local MovementLeftGroup = MovementMapTab:AddLeftGroupbox("Movement")
 
     MovementLeftGroup:AddToggle("Speed", {
         Text = "Speed Boost",
@@ -991,13 +1014,10 @@ function UI.createMovementTab()
         end
     })
 
-    -- Right Groupbox
-    local MovementRightGroup = MovementTab:AddRightGroupbox("Camera Teleport")
+    MovementLeftGroup:AddDivider()
+    MovementLeftGroup:AddLabel("Camera Teleport")
 
-    MovementRightGroup:AddDivider()
-    MovementRightGroup:AddLabel("Camera Teleport")
-
-    MovementRightGroup:AddToggle("CameraTeleport", {
+    MovementLeftGroup:AddToggle("CameraTeleport", {
         Text = "Camera Teleport (X)",
         Default = Config.cameraTeleportEnabled,
         Callback = function(Value)
@@ -1012,7 +1032,7 @@ function UI.createMovementTab()
         end
     })
 
-    MovementRightGroup:AddDropdown("CameraTargetMode", {
+    MovementLeftGroup:AddDropdown("CameraTargetMode", {
         Text = "Target Mode",
         Values = {"LowestHealth", "Nearest"},
         Default = Config.cameraTargetMode,
@@ -1028,14 +1048,14 @@ function UI.createMovementTab()
         end
     })
 
-    MovementRightGroup:AddSlider("CameraTeleportWaveDelay", {
+    MovementLeftGroup:AddSlider("CameraTeleportWaveDelay", {
         Text = "Wave Wait Time (s)",
         Default = Config.cameraTeleportWaveDelay,
         Min = 0, Max = 15, Rounding = 0,
         Callback = function(Value) Config.cameraTeleportWaveDelay = Value end
     })
 
-    MovementRightGroup:AddToggle("TeleportToLastZombie", {
+    MovementLeftGroup:AddToggle("TeleportToLastZombie", {
         Text = "Teleport to Last Zombie",
         Default = Config.teleportToLastZombie,
         Callback = function(Value)
@@ -1050,41 +1070,34 @@ function UI.createMovementTab()
         end
     })
 
-    MovementRightGroup:AddDivider()
-    MovementRightGroup:AddLabel("Camera Offset")
+    MovementLeftGroup:AddDivider()
+    MovementLeftGroup:AddLabel("Camera Offset")
 
-    MovementRightGroup:AddSlider("CameraOffsetX", {
+    MovementLeftGroup:AddSlider("CameraOffsetX", {
         Text = "Camera Offset X",
         Default = Config.cameraOffsetX,
         Min = -360, Max = 360, Rounding = 1,
         Callback = function(Value) Config.cameraOffsetX = Value end
     })
 
-    MovementRightGroup:AddSlider("CameraOffsetY", {
+    MovementLeftGroup:AddSlider("CameraOffsetY", {
         Text = "Camera Offset Y",
         Default = Config.cameraOffsetY,
         Min = -360, Max = 360, Rounding = 1,
         Callback = function(Value) Config.cameraOffsetY = Value end
     })
 
-    MovementRightGroup:AddSlider("CameraOffsetZ", {
+    MovementLeftGroup:AddSlider("CameraOffsetZ", {
         Text = "Camera Offset Z",
         Default = Config.cameraOffsetZ,
         Min = -360, Max = 360, Rounding = 1,
         Callback = function(Value) Config.cameraOffsetZ = Value end
     })
 
-    return MovementTab
-end
+    -- Right Groupbox: Map
+    local MapRightGroup = MovementMapTab:AddRightGroupbox("Map")
 
-
-----------------------------------------------------------
--- 🔹 Map Tab
-function UI.createMapTab()
-    local MapTab = UI.Window:AddTab("Map", "map-pin")
-    local MapGroup = MapTab:AddLeftGroupbox("Map")
-
-    MapGroup:AddDivider()
+    MapRightGroup:AddDivider()
 
     local mapDisplayNames = {
         "Exclusion [1001]",
@@ -1104,7 +1117,7 @@ function UI.createMapTab()
         ["Raid Mode [201]"] = 201,
     }
 
-    MapGroup:AddDropdown("MapWorld", {
+    MapRightGroup:AddDropdown("MapWorld", {
         Text = "Map",
         Values = mapDisplayNames,
         Default = mapDisplayNames[1],
@@ -1114,7 +1127,7 @@ function UI.createMapTab()
         end
     })
 
-    MapGroup:AddDropdown("MapDifficulty", {
+    MapRightGroup:AddDropdown("MapDifficulty", {
         Text = "Difficulty",
         Values = {"1 - Normal", "2 - Hard", "3 - Nightmare"},
         Default = "1 - Normal",
@@ -1124,20 +1137,20 @@ function UI.createMapTab()
         end
     })
 
-    MapGroup:AddSlider("MapMaxCount", {
+    MapRightGroup:AddSlider("MapMaxCount", {
         Text = "Max Players",
         Default = Config.selectedMaxCount,
         Min = 1, Max = 4, Rounding = 0,
         Callback = function(Value) Config.selectedMaxCount = Value end
     })
 
-    MapGroup:AddToggle("MapFriendOnly", {
+    MapRightGroup:AddToggle("MapFriendOnly", {
         Text = "Friend Only",
         Default = Config.selectedFriendOnly,
         Callback = function(Value) Config.selectedFriendOnly = Value end
     })
 
-    MapGroup:AddButton({
+    MapRightGroup:AddButton({
         Text = "Teleport & Start Map",
         Func = function()
             Map.teleportToWaitAreaAndStart()
@@ -1158,7 +1171,7 @@ function UI.createMapTab()
         end
     })
 
-    MapGroup:AddButton({
+    MapRightGroup:AddButton({
         Text = "Replay Match",
         Tooltip = "Replay the current match",
         Func = function()
@@ -1173,9 +1186,24 @@ function UI.createMapTab()
         end
     })
 
-    MapGroup:AddDivider()
+    MapRightGroup:AddButton({
+        Text = "Teleport to Main Game",
+        Tooltip = "Teleport to the main game",
+        Func = function()
+            Map.teleportToMainGame()
+            if UI.Library then
+                UI.Library:Notify({
+                    Title = "Map",
+                    Description = "Teleporting to main game...",
+                    Time = 3
+                })
+            end
+        end
+    })
 
-    MapGroup:AddToggle("SupplyESP", {
+    MapRightGroup:AddDivider()
+
+    MapRightGroup:AddToggle("SupplyESP", {
         Text = "Supply ESP (Right Side)",
         Tooltip = "Display all Supply items on the right side of the screen",
         Default = Config.supplyESPEnabled,
@@ -1196,7 +1224,7 @@ function UI.createMapTab()
         end
     })
 
-    MapGroup:AddDropdown("SupplyESPPosition", {
+    MapRightGroup:AddDropdown("SupplyESPPosition", {
         Text = "Supply Position",
         Values = {"Left", "Right"},
         Default = Config.supplyESPPosition,
@@ -1206,7 +1234,7 @@ function UI.createMapTab()
         end
     })
 
-    MapGroup:AddButton({
+    MapRightGroup:AddButton({
         Text = "Refresh Supply List",
         Tooltip = "Find all Supply items instantly",
         Func = function()
@@ -1232,9 +1260,9 @@ function UI.createMapTab()
         end
     })
 
-    MapGroup:AddDivider()
+    MapRightGroup:AddDivider()
 
-    MapGroup:AddToggle("AutoDoor", {
+    MapRightGroup:AddToggle("AutoDoor", {
         Text = "Auto Open Door",
         Tooltip = "Automatically open doors when available (check every 5s)",
         Default = Config.autoDoorEnabled,
@@ -1251,18 +1279,200 @@ function UI.createMapTab()
         end
     })
 
-    return MapTab
+    return MovementMapTab
 end
 
 ----------------------------------------------------------
--- 🔹 Event Tab
-function UI.createEventTab()
-    local EventTab = UI.Window:AddTab("Event", "calendar")
-    local EventGroup = EventTab:AddLeftGroupbox("Event")
+-- 🔹 Farm & Event Tab (Merged)
+function UI.createFarmEventTab()
+    local FarmEventTab = UI.Window:AddTab("Farm & Event", "package")
+    
+    -- Left Groupbox: Farm
+    local FarmLeftGroup = FarmEventTab:AddLeftGroupbox("Farm")
 
-    EventGroup:AddDivider()
+    FarmLeftGroup:AddToggle("AutoBulletBox", {
+        Text = "Auto BulletBox + Items",
+        Default = Config.autoBulletBoxEnabled,
+        Callback = function(Value)
+            Config.autoBulletBoxEnabled = Value
+            if UI.Library then
+                UI.Library:Notify({
+                    Title = "Farm",
+                    Description = Value and "Auto BulletBox enabled" or "Auto BulletBox disabled",
+                    Time = 2
+                })
+            end
+        end
+    })
 
-    EventGroup:AddToggle("ESPBob", {
+    FarmLeftGroup:AddToggle("Teleport", {
+        Text = "Auto Chest (T Key)",
+        Default = Config.teleportEnabled,
+        Callback = function(Value)
+            Config.teleportEnabled = Value
+            if UI.Library then
+                UI.Library:Notify({
+                    Title = "Farm",
+                    Description = Value and "Auto Chest enabled" or "Auto Chest disabled",
+                    Time = 2
+                })
+            end
+        end
+    })
+
+    FarmLeftGroup:AddSlider("ChestTeleportDelay", {
+        Text = "Chest Teleport Delay (s)",
+        Tooltip = "Delay time between chests when teleporting",
+        Default = Config.chestTeleportDelay or 0.5,
+        Min = 0.5, Max = 2.0, Rounding = 1,
+        Callback = function(Value)
+            Config.chestTeleportDelay = Value
+        end
+    })
+
+    FarmLeftGroup:AddButton({
+        Text = "Teleport to All Chests",
+        Func = function()
+            if Farm and Farm.teleportToAllChests then
+                print("[Farm] Teleporting to all chests...")
+                Farm.teleportToAllChests()
+                if UI.Library then
+                    UI.Library:Notify({
+                        Title = "Farm",
+                        Description = "Teleporting to all chests...",
+                        Time = 2
+                    })
+                end
+            end
+        end
+    })
+
+    FarmLeftGroup:AddDivider()
+    FarmLeftGroup:AddLabel("Potions - Common")
+
+    FarmLeftGroup:AddButton({
+        Text = "Common Attack (Buy + Drink)",
+        Func = function()
+            if Farm and Farm.buyAndDrinkPotion then
+                Farm.buyAndDrinkPotion("CommonAttack")
+                if UI.Library then
+                    UI.Library:Notify({
+                        Title = "Potion",
+                        Description = "Common Attack potion purchased and consumed!",
+                        Time = 3
+                    })
+                end
+            end
+        end
+    })
+
+    FarmLeftGroup:AddButton({
+        Text = "Common Health (Buy + Drink)",
+        Func = function()
+            if Farm and Farm.buyAndDrinkPotion then
+                Farm.buyAndDrinkPotion("CommonHealth")
+                if UI.Library then
+                    UI.Library:Notify({
+                        Title = "Potion",
+                        Description = "Common Health potion purchased and consumed!",
+                        Time = 3
+                    })
+                end
+            end
+        end
+    })
+
+    FarmLeftGroup:AddButton({
+        Text = "Common Luck (Buy + Drink)",
+        Func = function()
+            if Farm and Farm.buyAndDrinkPotion then
+                Farm.buyAndDrinkPotion("CommonLuck")
+                if UI.Library then
+                    UI.Library:Notify({
+                        Title = "Potion",
+                        Description = "Common Luck potion purchased and consumed!",
+                        Time = 3
+                    })
+                end
+            end
+        end
+    })
+
+    FarmLeftGroup:AddDivider()
+    FarmLeftGroup:AddLabel("Potions - Rare")
+
+    FarmLeftGroup:AddButton({
+        Text = "Rare Attack (Buy + Drink)",
+        Func = function()
+            if Farm and Farm.buyAndDrinkPotion then
+                Farm.buyAndDrinkPotion("RareAttack")
+                if UI.Library then
+                    UI.Library:Notify({
+                        Title = "Potion",
+                        Description = "Rare Attack potion purchased and consumed!",
+                        Time = 3
+                    })
+                end
+            end
+        end
+    })
+
+    FarmLeftGroup:AddButton({
+        Text = "Rare Health (Buy + Drink)",
+        Func = function()
+            if Farm and Farm.buyAndDrinkPotion then
+                Farm.buyAndDrinkPotion("RareHealth")
+                if UI.Library then
+                    UI.Library:Notify({
+                        Title = "Potion",
+                        Description = "Rare Health potion purchased and consumed!",
+                        Time = 3
+                    })
+                end
+            end
+        end
+    })
+
+    FarmLeftGroup:AddButton({
+        Text = "Rare Luck (Buy + Drink)",
+        Func = function()
+            if Farm and Farm.buyAndDrinkPotion then
+                Farm.buyAndDrinkPotion("RareLuck")
+                if UI.Library then
+                    UI.Library:Notify({
+                        Title = "Potion",
+                        Description = "Rare Luck potion purchased and consumed!",
+                        Time = 3
+                    })
+                end
+            end
+        end
+    })
+
+    FarmLeftGroup:AddDivider()
+    FarmLeftGroup:AddLabel("Codes")
+
+    FarmLeftGroup:AddButton({
+        Text = "Redeem All Codes",
+        Tooltip = "RAID1212, CHRISTMAS, UPD1212",
+        Func = function()
+            Farm.redeemAllCodes()
+            if UI.Library then
+                UI.Library:Notify({
+                    Title = "Codes",
+                    Description = "Redeemed all codes! (RAID1212, CHRISTMAS, UPD1212)",
+                    Time = 3
+                })
+            end
+        end
+    })
+
+    -- Right Groupbox: Event
+    local EventRightGroup = FarmEventTab:AddRightGroupbox("Event")
+
+    EventRightGroup:AddDivider()
+
+    EventRightGroup:AddToggle("ESPBob", {
         Text = "ESP Bob",
         Tooltip = "Display ESP for Bob",
         Default = Config.espBobEnabled,
@@ -1283,7 +1493,7 @@ function UI.createEventTab()
         end
     })
 
-    EventGroup:AddLabel("Bob ESP Color"):AddColorPicker("ESPBobColor", {
+    EventRightGroup:AddLabel("Bob ESP Color"):AddColorPicker("ESPBobColor", {
         Default = Config.espColorBob,
         Title = "Bob ESP Color",
         Callback = function(Value)
@@ -1304,7 +1514,7 @@ function UI.createEventTab()
         end
     })
 
-    EventGroup:AddButton({
+    EventRightGroup:AddButton({
         Text = "Teleport to Bob",
         Tooltip = "Teleport to the nearest Bob",
         Func = function()
@@ -1329,9 +1539,9 @@ function UI.createEventTab()
         end
     })
 
-    EventGroup:AddDivider()
+    EventRightGroup:AddDivider()
 
-    EventGroup:AddToggle("AutoBuyChristmasGiftBox", {
+    EventRightGroup:AddToggle("AutoBuyChristmasGiftBox", {
         Text = "Auto Buy Christmas Gift Box",
         Tooltip = "Automatically buy Christmas Gift Box every second",
         Default = Config.autoBuyChristmasGiftBoxEnabled,
@@ -1347,7 +1557,7 @@ function UI.createEventTab()
         end
     })
 
-    EventGroup:AddToggle("AutoBuySantaClausGift", {
+    EventRightGroup:AddToggle("AutoBuySantaClausGift", {
         Text = "Auto Buy Santa Claus Gift",
         Tooltip = "Automatically buy Santa Claus Gift every second",
         Default = Config.autoBuySantaClausGiftEnabled,
@@ -1363,185 +1573,8 @@ function UI.createEventTab()
         end
     })
 
-    return EventTab
+    return FarmEventTab
 end
-
-----------------------------------------------------------
--- 🔹 Farm Tab
-function UI.createFarmTab()
-    local FarmTab = UI.Window:AddTab("Farm", "package")
-    local FarmGroup = FarmTab:AddLeftGroupbox("Farm")
-
-    FarmGroup:AddToggle("AutoBulletBox", {
-        Text = "Auto BulletBox + Items",
-        Default = Config.autoBulletBoxEnabled,
-        Callback = function(Value)
-            Config.autoBulletBoxEnabled = Value
-            if UI.Library then
-                UI.Library:Notify({
-                    Title = "Farm",
-                    Description = Value and "Auto BulletBox enabled" or "Auto BulletBox disabled",
-                    Time = 2
-                })
-            end
-        end
-    })
-
-    FarmGroup:AddToggle("Teleport", {
-        Text = "Auto Chest (T Key)",
-        Default = Config.teleportEnabled,
-        Callback = function(Value)
-            Config.teleportEnabled = Value
-            if UI.Library then
-                UI.Library:Notify({
-                    Title = "Farm",
-                    Description = Value and "Auto Chest enabled" or "Auto Chest disabled",
-                    Time = 2
-                })
-            end
-        end
-    })
-
-    FarmGroup:AddButton({
-        Text = "Teleport to All Chests",
-        Func = function()
-            if Farm and Farm.teleportToAllChests then
-                print("[Farm] Teleporting to all chests...")
-                Farm.teleportToAllChests()
-                if UI.Library then
-                    UI.Library:Notify({
-                        Title = "Farm",
-                        Description = "Teleporting to all chests...",
-                        Time = 2
-                    })
-                end
-            end
-        end
-    })
-
-    FarmGroup:AddDivider()
-    FarmGroup:AddLabel("Potions - Common")
-
-    FarmGroup:AddButton({
-        Text = "Common Attack (Buy + Drink)",
-        Func = function()
-            if Farm and Farm.buyAndDrinkPotion then
-                Farm.buyAndDrinkPotion("CommonAttack")
-                if UI.Library then
-                    UI.Library:Notify({
-                        Title = "Potion",
-                        Description = "Common Attack potion purchased and consumed!",
-                        Time = 3
-                    })
-                end
-            end
-        end
-    })
-
-    FarmGroup:AddButton({
-        Text = "Common Health (Buy + Drink)",
-        Func = function()
-            if Farm and Farm.buyAndDrinkPotion then
-                Farm.buyAndDrinkPotion("CommonHealth")
-                if UI.Library then
-                    UI.Library:Notify({
-                        Title = "Potion",
-                        Description = "Common Health potion purchased and consumed!",
-                        Time = 3
-                    })
-                end
-            end
-        end
-    })
-
-    FarmGroup:AddButton({
-        Text = "Common Luck (Buy + Drink)",
-        Func = function()
-            if Farm and Farm.buyAndDrinkPotion then
-                Farm.buyAndDrinkPotion("CommonLuck")
-                if UI.Library then
-                    UI.Library:Notify({
-                        Title = "Potion",
-                        Description = "Common Luck potion purchased and consumed!",
-                        Time = 3
-                    })
-                end
-            end
-        end
-    })
-
-    FarmGroup:AddDivider()
-    FarmGroup:AddLabel("Potions - Rare")
-
-    FarmGroup:AddButton({
-        Text = "Rare Attack (Buy + Drink)",
-        Func = function()
-            if Farm and Farm.buyAndDrinkPotion then
-                Farm.buyAndDrinkPotion("RareAttack")
-                if UI.Library then
-                    UI.Library:Notify({
-                        Title = "Potion",
-                        Description = "Rare Attack potion purchased and consumed!",
-                        Time = 3
-                    })
-                end
-            end
-        end
-    })
-
-    FarmGroup:AddButton({
-        Text = "Rare Health (Buy + Drink)",
-        Func = function()
-            if Farm and Farm.buyAndDrinkPotion then
-                Farm.buyAndDrinkPotion("RareHealth")
-                if UI.Library then
-                    UI.Library:Notify({
-                        Title = "Potion",
-                        Description = "Rare Health potion purchased and consumed!",
-                        Time = 3
-                    })
-                end
-            end
-        end
-    })
-
-    FarmGroup:AddButton({
-        Text = "Rare Luck (Buy + Drink)",
-        Func = function()
-            if Farm and Farm.buyAndDrinkPotion then
-                Farm.buyAndDrinkPotion("RareLuck")
-                if UI.Library then
-                    UI.Library:Notify({
-                        Title = "Potion",
-                        Description = "Rare Luck potion purchased and consumed!",
-                        Time = 3
-                    })
-                end
-            end
-        end
-    })
-
-    FarmGroup:AddDivider()
-    FarmGroup:AddLabel("Codes")
-
-    FarmGroup:AddButton({
-        Text = "Redeem All Codes",
-        Tooltip = "RAID1212, CHRISTMAS, UPD1212",
-        Func = function()
-            Farm.redeemAllCodes()
-            if UI.Library then
-                UI.Library:Notify({
-                    Title = "Codes",
-                    Description = "Redeemed all codes! (RAID1212, CHRISTMAS, UPD1212)",
-                    Time = 3
-                })
-            end
-        end
-    })
-
-    return FarmTab
-end
-
 
 ----------------------------------------------------------
 -- 🔹 Character Tab
@@ -1907,7 +1940,6 @@ function UI.createCharacterTab()
     return CharacterTab
 end
 
-
 ----------------------------------------------------------
 -- 🔹 Settings Tab
 function UI.createSettingsTab(cleanupCallback)
@@ -2127,320 +2159,12 @@ function UI.createSettingsTab(cleanupCallback)
 end
 
 ----------------------------------------------------------
--- 🔹 HUD Customization Tab
-function UI.createHUDTab()
-    local HUDTab = UI.Window:AddTab("HUD Customize", "monitor")
-    local HUDLeftGroup = HUDTab:AddLeftGroupbox("HUD Settings")
-
-    HUDLeftGroup:AddToggle("CustomHUD", {
-        Text = "Enable Custom HUD",
-        Tooltip = "Bật/tắt custom HUD",
-        Default = false,
-        Callback = function(Value)
-            HUD.toggleCustomHUD(Value)
-            if UI.Library then
-                UI.Library:Notify({
-                    Title = "HUD",
-                    Description = Value and "Custom HUD enabled" or "Custom HUD disabled",
-                    Time = 2
-                })
-            end
-        end
-    })
-
-    HUDLeftGroup:AddToggle("ApplyToOtherPlayers", {
-        Text = "Apply to Other Players",
-        Tooltip = "Áp dụng custom HUD cho tất cả players khác",
-        Default = true,
-        Callback = function(Value)
-            HUD.toggleApplyToOtherPlayers(Value)
-            if UI.Library then
-                UI.Library:Notify({
-                    Title = "HUD",
-                    Description = Value and "Apply to Other Players enabled" or "Apply to Other Players disabled",
-                    Time = 2
-                })
-            end
-        end
-    })
-
-    HUDLeftGroup:AddDivider()
-    HUDLeftGroup:AddLabel("Visibility Settings")
-
-    HUDLeftGroup:AddToggle("TitleVisible", {
-        Text = "Show Title",
-        Default = true,
-        Callback = function(Value)
-            HUD.titleVisible = Value
-            if HUD.customHUDEnabled then
-                HUD.applyCustomHUD()
-            end
-        end
-    })
-
-    HUDLeftGroup:AddToggle("PlayerNameVisible", {
-        Text = "Show Player Name",
-        Default = true,
-        Callback = function(Value)
-            HUD.playerNameVisible = Value
-            if HUD.customHUDEnabled then
-                HUD.applyCustomHUD()
-            end
-        end
-    })
-
-    HUDLeftGroup:AddToggle("ClassVisible", {
-        Text = "Show Class",
-        Default = true,
-        Callback = function(Value)
-            HUD.classVisible = Value
-            if HUD.customHUDEnabled then
-                HUD.applyCustomHUD()
-            end
-        end
-    })
-
-    HUDLeftGroup:AddToggle("LevelVisible", {
-        Text = "Show Level",
-        Default = true,
-        Callback = function(Value)
-            HUD.levelVisible = Value
-            if HUD.customHUDEnabled then
-                HUD.applyCustomHUD()
-            end
-        end
-    })
-
-    HUDLeftGroup:AddDivider()
-    HUDLeftGroup:AddLabel("EXP Display")
-
-    HUDLeftGroup:AddToggle("ExpDisplay", {
-        Text = "Show EXP Display",
-        Tooltip = "Display EXP at the bottom right of the screen",
-        Default = true,
-        Callback = function(Value)
-            if UI.Library then
-                UI.Library:Notify({
-                    Title = "HUD",
-                    Description = Value and "EXP Display enabled" or "EXP Display disabled",
-                    Time = 2
-                })
-            end
-            HUD.toggleExpDisplay(Value)
-        end
-    })
-
-    HUDLeftGroup:AddDivider()
-    HUDLeftGroup:AddLabel("Text Customization")
-
-    HUDLeftGroup:AddInput("CustomTitle", {
-        Text = "Custom Title",
-        Tooltip = "Leave empty to keep original",
-        Default = "CHEATER",
-        Placeholder = "Enter title...",
-        Callback = function(Value)
-            HUD.customTitle = Value
-            if HUD.customHUDEnabled then
-                HUD.applyCustomHUD()
-            end
-        end
-    })
-
-    HUDLeftGroup:AddInput("CustomPlayerName", {
-        Text = "Custom Player Name",
-        Tooltip = "Leave empty to keep original",
-        Default = "WiniFy",
-        Placeholder = "Enter name...",
-        Callback = function(Value)
-            HUD.customPlayerName = Value
-            if HUD.customHUDEnabled then
-                HUD.applyCustomHUD()
-            end
-        end
-    })
-
-    HUDLeftGroup:AddInput("CustomClass", {
-        Text = "Custom Class",
-        Tooltip = "Leave empty to keep original",
-        Default = "",
-        Placeholder = "Enter class...",
-        Callback = function(Value)
-            HUD.customClass = Value
-            if HUD.customHUDEnabled then
-                HUD.applyCustomHUD()
-            end
-        end
-    })
-
-    HUDLeftGroup:AddInput("CustomLevel", {
-        Text = "Custom Level",
-        Tooltip = "Leave empty to keep original",
-        Default = "",
-        Placeholder = "Enter level...",
-        Callback = function(Value)
-            HUD.customLevel = Value
-            if HUD.customHUDEnabled then
-                HUD.applyCustomHUD()
-            end
-        end
-    })
-
-    HUDLeftGroup:AddDivider()
-    HUDLeftGroup:AddLabel("Actions")
-
-    HUDLeftGroup:AddButton({
-        Text = "Apply Changes",
-        Tooltip = "Apply all changes",
-        Func = function()
-            if HUD.customHUDEnabled then
-                HUD.applyCustomHUD()
-                if UI.Library then
-                    UI.Library:Notify({
-                        Title = "HUD",
-                        Description = "HUD changes applied!",
-                        Time = 2
-                    })
-                end
-            else
-                if UI.Library then
-                    UI.Library:Notify({
-                        Title = "HUD",
-                        Description = "Please enable Custom HUD first",
-                        Time = 2
-                    })
-                end
-            end
-        end
-    })
-
-    HUDLeftGroup:AddButton({
-        Text = "Reset to Original",
-        Tooltip = "Restore HUD to original",
-        Func = function()
-            HUD.restoreOriginalHUD()
-            if UI.Library then
-                UI.Library:Notify({
-                    Title = "HUD",
-                    Description = "HUD restored to original!",
-                    Time = 2
-                })
-            end
-        end
-    })
-
-    -- Right Groupbox
-    local HUDRightGroup = HUDTab:AddRightGroupbox("Gradient Colors")
-
-    HUDRightGroup:AddDivider()
-    HUDRightGroup:AddLabel("Title Gradient Colors")
-
-    HUDRightGroup:AddLabel("Title Color 1"):AddColorPicker("TitleGradient1", {
-        Default = Color3.fromRGB(255, 0, 0), -- Red
-        Title = "Title Color 1",
-        Callback = function(Value)
-            HUD.titleGradientColor1 = Value
-            if HUD.customHUDEnabled then
-                HUD.applyCustomHUD()
-            end
-        end
-    })
-
-    HUDRightGroup:AddLabel("Title Color 2"):AddColorPicker("TitleGradient2", {
-        Default = Color3.fromRGB(255, 255, 255), -- White
-        Title = "Title Color 2",
-        Callback = function(Value)
-            HUD.titleGradientColor2 = Value
-            if HUD.customHUDEnabled then
-                HUD.applyCustomHUD()
-            end
-        end
-    })
-
-    HUDRightGroup:AddDivider()
-    HUDRightGroup:AddLabel("Player Name Gradient Colors")
-
-    HUDRightGroup:AddLabel("Name Color 1"):AddColorPicker("PlayerNameGradient1", {
-        Default = HUD.playerNameGradientColor1 or Color3.fromRGB(255, 255, 255),
-        Title = "Name Color 1",
-        Callback = function(Value)
-            HUD.playerNameGradientColor1 = Value
-            if HUD.customHUDEnabled then
-                HUD.applyCustomHUD()
-            end
-        end
-    })
-
-    HUDRightGroup:AddLabel("Name Color 2"):AddColorPicker("PlayerNameGradient2", {
-        Default = HUD.playerNameGradientColor2 or Color3.fromRGB(255, 255, 255),
-        Title = "Name Color 2",
-        Callback = function(Value)
-            HUD.playerNameGradientColor2 = Value
-            if HUD.customHUDEnabled then
-                HUD.applyCustomHUD()
-            end
-        end
-    })
-
-    HUDRightGroup:AddDivider()
-    HUDRightGroup:AddLabel("Class Gradient Colors")
-
-    HUDRightGroup:AddLabel("Class Color 1"):AddColorPicker("ClassGradient1", {
-        Default = HUD.classGradientColor1 or Color3.fromRGB(255, 255, 255),
-        Title = "Class Color 1",
-        Callback = function(Value)
-            HUD.classGradientColor1 = Value
-            if HUD.customHUDEnabled then
-                HUD.applyCustomHUD()
-            end
-        end
-    })
-
-    HUDRightGroup:AddLabel("Class Color 2"):AddColorPicker("ClassGradient2", {
-        Default = HUD.classGradientColor2 or Color3.fromRGB(255, 255, 255),
-        Title = "Class Color 2",
-        Callback = function(Value)
-            HUD.classGradientColor2 = Value
-            if HUD.customHUDEnabled then
-                HUD.applyCustomHUD()
-            end
-        end
-    })
-
-    HUDRightGroup:AddDivider()
-    HUDRightGroup:AddLabel("Level Gradient Colors")
-
-    HUDRightGroup:AddLabel("Level Color 1"):AddColorPicker("LevelGradient1", {
-        Default = HUD.levelGradientColor1 or Color3.fromRGB(255, 255, 255),
-        Title = "Level Color 1",
-        Callback = function(Value)
-            HUD.levelGradientColor1 = Value
-            if HUD.customHUDEnabled then
-                HUD.applyCustomHUD()
-            end
-        end
-    })
-
-    HUDRightGroup:AddLabel("Level Color 2"):AddColorPicker("LevelGradient2", {
-        Default = HUD.levelGradientColor2 or Color3.fromRGB(255, 255, 255),
-        Title = "Level Color 2",
-        Callback = function(Value)
-            HUD.levelGradientColor2 = Value
-            if HUD.customHUDEnabled then
-                HUD.applyCustomHUD()
-            end
-        end
-    })
-
-    return HUDTab
-end
-
-
-
-----------------------------------------------------------
--- 🔹 Visuals Tab
-function UI.createVisualsTab()
-    local VisualsTab = UI.Window:AddTab("Visuals", "eye")
-    local VisualsLeftGroup = VisualsTab:AddLeftGroupbox("Visuals")
+-- 🔹 Visuals & HUD Tab (Merged)
+function UI.createVisualsHUDTab()
+    local VisualsHUDTab = UI.Window:AddTab("Visuals & HUD", "eye")
+    
+    -- Left Groupbox: Visuals
+    local VisualsLeftGroup = VisualsHUDTab:AddLeftGroupbox("Visuals")
 
     VisualsLeftGroup:AddDivider()
 
@@ -2530,24 +2254,323 @@ function UI.createVisualsTab()
         end
     })
 
-    return VisualsTab
+    -- Right Groupbox: HUD Customization
+    local HUDRightGroup = VisualsHUDTab:AddRightGroupbox("HUD Customization")
+
+    HUDRightGroup:AddToggle("CustomHUD", {
+        Text = "Enable Custom HUD",
+        Tooltip = "Bật/tắt custom HUD",
+        Default = false,
+        Callback = function(Value)
+            HUD.toggleCustomHUD(Value)
+            if UI.Library then
+                UI.Library:Notify({
+                    Title = "HUD",
+                    Description = Value and "Custom HUD enabled" or "Custom HUD disabled",
+                    Time = 2
+                })
+            end
+        end
+    })
+
+    HUDRightGroup:AddToggle("ApplyToOtherPlayers", {
+        Text = "Apply to Other Players",
+        Tooltip = "Áp dụng custom HUD cho tất cả players khác",
+        Default = true,
+        Callback = function(Value)
+            HUD.toggleApplyToOtherPlayers(Value)
+            if UI.Library then
+                UI.Library:Notify({
+                    Title = "HUD",
+                    Description = Value and "Apply to Other Players enabled" or "Apply to Other Players disabled",
+                    Time = 2
+                })
+            end
+        end
+    })
+
+    HUDRightGroup:AddDivider()
+    HUDRightGroup:AddLabel("Visibility Settings")
+
+    HUDRightGroup:AddToggle("TitleVisible", {
+        Text = "Show Title",
+        Default = true,
+        Callback = function(Value)
+            HUD.titleVisible = Value
+            if HUD.customHUDEnabled then
+                HUD.applyCustomHUD()
+            end
+        end
+    })
+
+    HUDRightGroup:AddToggle("PlayerNameVisible", {
+        Text = "Show Player Name",
+        Default = true,
+        Callback = function(Value)
+            HUD.playerNameVisible = Value
+            if HUD.customHUDEnabled then
+                HUD.applyCustomHUD()
+            end
+        end
+    })
+
+    HUDRightGroup:AddToggle("ClassVisible", {
+        Text = "Show Class",
+        Default = true,
+        Callback = function(Value)
+            HUD.classVisible = Value
+            if HUD.customHUDEnabled then
+                HUD.applyCustomHUD()
+            end
+        end
+    })
+
+    HUDRightGroup:AddToggle("LevelVisible", {
+        Text = "Show Level",
+        Default = true,
+        Callback = function(Value)
+            HUD.levelVisible = Value
+            if HUD.customHUDEnabled then
+                HUD.applyCustomHUD()
+            end
+        end
+    })
+
+    HUDRightGroup:AddDivider()
+    HUDRightGroup:AddLabel("EXP Display")
+
+    HUDRightGroup:AddToggle("ExpDisplay", {
+        Text = "Show EXP Display",
+        Tooltip = "Display EXP at the bottom right of the screen",
+        Default = true,
+        Callback = function(Value)
+            if UI.Library then
+                UI.Library:Notify({
+                    Title = "HUD",
+                    Description = Value and "EXP Display enabled" or "EXP Display disabled",
+                    Time = 2
+                })
+            end
+            HUD.toggleExpDisplay(Value)
+        end
+    })
+
+    HUDRightGroup:AddDivider()
+    HUDRightGroup:AddLabel("Text Customization")
+
+    HUDRightGroup:AddInput("CustomTitle", {
+        Text = "Custom Title",
+        Tooltip = "Leave empty to keep original",
+        Default = "CHEATER",
+        Placeholder = "Enter title...",
+        Callback = function(Value)
+            HUD.customTitle = Value
+            if HUD.customHUDEnabled then
+                HUD.applyCustomHUD()
+            end
+        end
+    })
+
+    HUDRightGroup:AddInput("CustomPlayerName", {
+        Text = "Custom Player Name",
+        Tooltip = "Leave empty to keep original",
+        Default = "WiniFy",
+        Placeholder = "Enter name...",
+        Callback = function(Value)
+            HUD.customPlayerName = Value
+            if HUD.customHUDEnabled then
+                HUD.applyCustomHUD()
+            end
+        end
+    })
+
+    HUDRightGroup:AddInput("CustomClass", {
+        Text = "Custom Class",
+        Tooltip = "Leave empty to keep original",
+        Default = "",
+        Placeholder = "Enter class...",
+        Callback = function(Value)
+            HUD.customClass = Value
+            if HUD.customHUDEnabled then
+                HUD.applyCustomHUD()
+            end
+        end
+    })
+
+    HUDRightGroup:AddInput("CustomLevel", {
+        Text = "Custom Level",
+        Tooltip = "Leave empty to keep original",
+        Default = "",
+        Placeholder = "Enter level...",
+        Callback = function(Value)
+            HUD.customLevel = Value
+            if HUD.customHUDEnabled then
+                HUD.applyCustomHUD()
+            end
+        end
+    })
+
+    HUDRightGroup:AddDivider()
+    HUDRightGroup:AddLabel("Actions")
+
+    HUDRightGroup:AddButton({
+        Text = "Apply Changes",
+        Tooltip = "Apply all changes",
+        Func = function()
+            if HUD.customHUDEnabled then
+                HUD.applyCustomHUD()
+                if UI.Library then
+                    UI.Library:Notify({
+                        Title = "HUD",
+                        Description = "HUD changes applied!",
+                        Time = 2
+                    })
+                end
+            else
+                if UI.Library then
+                    UI.Library:Notify({
+                        Title = "HUD",
+                        Description = "Please enable Custom HUD first",
+                        Time = 2
+                    })
+                end
+            end
+        end
+    })
+
+    HUDRightGroup:AddButton({
+        Text = "Reset to Original",
+        Tooltip = "Restore HUD to original",
+        Func = function()
+            HUD.restoreOriginalHUD()
+            if UI.Library then
+                UI.Library:Notify({
+                    Title = "HUD",
+                    Description = "HUD restored to original!",
+                    Time = 2
+                })
+            end
+        end
+    })
+
+    -- Add a second right groupbox for Gradient Colors (since we need more space)
+    local HUDGradientGroup = VisualsHUDTab:AddRightGroupbox("Gradient Colors")
+
+    HUDGradientGroup:AddDivider()
+    HUDGradientGroup:AddLabel("Title Gradient Colors")
+
+    HUDGradientGroup:AddLabel("Title Color 1"):AddColorPicker("TitleGradient1", {
+        Default = Color3.fromRGB(255, 0, 0), -- Red
+        Title = "Title Color 1",
+        Callback = function(Value)
+            HUD.titleGradientColor1 = Value
+            if HUD.customHUDEnabled then
+                HUD.applyCustomHUD()
+            end
+        end
+    })
+
+    HUDGradientGroup:AddLabel("Title Color 2"):AddColorPicker("TitleGradient2", {
+        Default = Color3.fromRGB(255, 255, 255), -- White
+        Title = "Title Color 2",
+        Callback = function(Value)
+            HUD.titleGradientColor2 = Value
+            if HUD.customHUDEnabled then
+                HUD.applyCustomHUD()
+            end
+        end
+    })
+
+    HUDGradientGroup:AddDivider()
+    HUDGradientGroup:AddLabel("Player Name Gradient Colors")
+
+    HUDGradientGroup:AddLabel("Name Color 1"):AddColorPicker("PlayerNameGradient1", {
+        Default = HUD.playerNameGradientColor1 or Color3.fromRGB(255, 255, 255),
+        Title = "Name Color 1",
+        Callback = function(Value)
+            HUD.playerNameGradientColor1 = Value
+            if HUD.customHUDEnabled then
+                HUD.applyCustomHUD()
+            end
+        end
+    })
+
+    HUDGradientGroup:AddLabel("Name Color 2"):AddColorPicker("PlayerNameGradient2", {
+        Default = HUD.playerNameGradientColor2 or Color3.fromRGB(255, 255, 255),
+        Title = "Name Color 2",
+        Callback = function(Value)
+            HUD.playerNameGradientColor2 = Value
+            if HUD.customHUDEnabled then
+                HUD.applyCustomHUD()
+            end
+        end
+    })
+
+    HUDGradientGroup:AddDivider()
+    HUDGradientGroup:AddLabel("Class Gradient Colors")
+
+    HUDGradientGroup:AddLabel("Class Color 1"):AddColorPicker("ClassGradient1", {
+        Default = HUD.classGradientColor1 or Color3.fromRGB(255, 255, 255),
+        Title = "Class Color 1",
+        Callback = function(Value)
+            HUD.classGradientColor1 = Value
+            if HUD.customHUDEnabled then
+                HUD.applyCustomHUD()
+            end
+        end
+    })
+
+    HUDGradientGroup:AddLabel("Class Color 2"):AddColorPicker("ClassGradient2", {
+        Default = HUD.classGradientColor2 or Color3.fromRGB(255, 255, 255),
+        Title = "Class Color 2",
+        Callback = function(Value)
+            HUD.classGradientColor2 = Value
+            if HUD.customHUDEnabled then
+                HUD.applyCustomHUD()
+            end
+        end
+    })
+
+    HUDGradientGroup:AddDivider()
+    HUDGradientGroup:AddLabel("Level Gradient Colors")
+
+    HUDGradientGroup:AddLabel("Level Color 1"):AddColorPicker("LevelGradient1", {
+        Default = HUD.levelGradientColor1 or Color3.fromRGB(255, 255, 255),
+        Title = "Level Color 1",
+        Callback = function(Value)
+            HUD.levelGradientColor1 = Value
+            if HUD.customHUDEnabled then
+                HUD.applyCustomHUD()
+            end
+        end
+    })
+
+    HUDGradientGroup:AddLabel("Level Color 2"):AddColorPicker("LevelGradient2", {
+        Default = HUD.levelGradientColor2 or Color3.fromRGB(255, 255, 255),
+        Title = "Level Color 2",
+        Callback = function(Value)
+            HUD.levelGradientColor2 = Value
+            if HUD.customHUDEnabled then
+                HUD.applyCustomHUD()
+            end
+        end
+    })
+
+    return VisualsHUDTab
 end
 
 ----------------------------------------------------------
 -- 🔹 Build All Tabs
 function UI.buildAllTabs(cleanupCallback)
-    UI.createChangelogTab()
-    UI.createCombatTab()
-    UI.createESPTab()
-    UI.createMovementTab()
-    UI.createMapTab()
-    UI.createEventTab()
-    UI.createFarmTab()
-    UI.createCharacterTab()
-    UI.createVisualsTab()
-    UI.createHUDTab()
-    UI.createServerTab()
-    UI.createSettingsTab(cleanupCallback)
+    -- Use merged tabs
+    UI.createChangelogTab()        -- Changelog (separate tab)
+    UI.createCombatESPTab()        -- Combat & ESP merged
+    UI.createMovementMapTab()      -- Movement & Map merged
+    UI.createFarmEventTab()        -- Farm & Event merged
+    UI.createCharacterTab()       -- Character (unchanged)
+    UI.createVisualsHUDTab()       -- Visuals & HUD merged
+    UI.createServerTab()           -- Server (unchanged)
+    UI.createSettingsTab(cleanupCallback)  -- Settings
     
     -- Setup OnUnload callback for Obsidian UI
     if UI.Library and cleanupCallback then

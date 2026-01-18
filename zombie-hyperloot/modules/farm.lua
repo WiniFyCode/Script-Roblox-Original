@@ -214,7 +214,7 @@ function Farm.teleportToAllChests()
         if not targetPart then continue end
 
         hrp.CFrame = CFrame.new(targetPart.Position + Vector3.new(0, 3, 0))
-        task.wait(0.25)
+        task.wait(Config.chestTeleportDelay or 0.5)
 
         local chestFolder = chestItem:FindFirstChild("Chest")
         if chestFolder then
@@ -225,7 +225,7 @@ function Farm.teleportToAllChests()
                         fireproximityprompt(proximityPrompt)
                     end
                 end)
-                task.wait(0.25)
+                task.wait(Config.chestTeleportDelay or 0.5)
             end
         end
     end
