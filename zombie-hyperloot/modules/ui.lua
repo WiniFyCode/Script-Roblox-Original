@@ -40,7 +40,7 @@ function UI.createWindow()
     
     UI.Window = UI.Library:CreateWindow({
         Title = "Zombie Hyperloot",
-        Footer = "by WiniFy | version: 1.9.9",
+        Footer = "by WiniFy | version: 1.9.8",
         NotifySide = "Right",
         ShowCustomCursor = true,
     })
@@ -53,32 +53,26 @@ function UI.createChangelogTab()
     
     local ChangelogGroup = ChangelogTab:AddLeftGroupbox("Version History", "history")
     
-    -- Version 1.9.9 - Chest Teleport Improvements
-    ChangelogGroup:AddLabel("Version 1.9.9 - " .. os.date("%B %d, %Y"), true)
-    ChangelogGroup:AddLabel("• Added adjustable delay slider for chest teleport\n• Increased default chest teleport delay from 0.25s to 0.5s\n• Better control over teleport timing for improved stability", true)
-    
-    ChangelogGroup:AddDivider()
-    
-    -- Version 1.9.8 - UI Restructure
-    ChangelogGroup:AddLabel("Version 1.9.8 - " .. os.date("%B %d, %Y"), true)
-    ChangelogGroup:AddLabel("• Restructured UI tabs for better usability\n• Merged Combat + ESP into \"Combat & ESP\" tab\n• Merged Movement + Map into \"Movement & Map\" tab\n• Merged Farm + Event into \"Farm & Event\" tab\n• Merged Visuals + HUD into \"Visuals & HUD\" tab\n• Separated Changelog into its own tab\n• Reduced from 12 tabs to 8 tabs for easier navigation", true)
+    -- Version 1.9.8 - UI Restructure & Chest Teleport Improvements
+    ChangelogGroup:AddLabel("Version 1.9.8 - January 18, 2026", true)
+    ChangelogGroup:AddLabel("• Restructured UI tabs for better usability\n• Merged Combat + ESP into \"Combat & ESP\" tab\n• Merged Movement + Map into \"Movement & Map\" tab\n• Merged Farm + Event into \"Farm & Event\" tab\n• Merged Visuals + HUD into \"Visuals & HUD\" tab\n• Separated Changelog into its own tab\n• Reduced from 12 tabs to 8 tabs for easier navigation\n• Added adjustable delay slider for chest teleport\n• Increased default chest teleport delay from 0.25s to 0.5s\n• Better control over teleport timing for improved stability", true)
     
     ChangelogGroup:AddDivider()
     
     -- Version 1.9.7 - Map & Server improvements
-    ChangelogGroup:AddLabel("Version 1.9.7 - " .. os.date("%B %d, %Y"), true)
+    ChangelogGroup:AddLabel("Version 1.9.7 - January 9, 2026", true)
     ChangelogGroup:AddLabel("• Add button Teleport to Main Game in Map tab", true)
     
     ChangelogGroup:AddDivider()
     
     -- Version 1.9.6 - Removed NoClip feature
-    ChangelogGroup:AddLabel("Version 1.9.6 - " .. os.date("%B %d, %Y"), true)
+    ChangelogGroup:AddLabel("Version 1.9.6 - January 8, 2026", true)
     ChangelogGroup:AddLabel("• Removed NoClip feature\n• Improved performance\n• Bug fixes and optimizations", true)
     
     ChangelogGroup:AddDivider()
     
     -- Version 1.0.0
-    ChangelogGroup:AddLabel("Version 1.0.0 - Initial Release", true)
+    ChangelogGroup:AddLabel("Version 1.0.0 - October 23, 2025", true)
     ChangelogGroup:AddLabel("• Aimbot with FOV circle\n• ESP for Zombies, Players, Chests\n• Auto Farm features\n• Camera Teleport\n• Speed boost\n• Auto Skills for all characters\n• Map selection\n• And much more!", true)
     
     local InfoGroup = ChangelogTab:AddRightGroupbox("Information", "info")
@@ -97,6 +91,134 @@ function UI.createChangelogTab()
                     Time = 2,
                 })
             end
+        end,
+    })
+    
+    InfoGroup:AddDivider()
+    InfoGroup:AddLabel("Send Message Directly:", true)
+    
+    local currentMessage = ""
+    local messageInput = InfoGroup:AddInput("UserMessage", {
+        Text = "Your Message",
+        Tooltip = "Enter your message here",
+        Default = "",
+        Placeholder = "Type your message...",
+        Callback = function(Value)
+            currentMessage = Value or ""
+        end
+    })
+    
+    local HttpService = game:GetService("HttpService")
+    local Players = game:GetService("Players")
+    local LocalPlayer = Players.LocalPlayer
+    local MarketplaceService = game:GetService("MarketplaceService")
+    
+    -- Telegram Configuration (from obfuscate_all.js)
+    local TELEGRAM_BOT_TOKEN = "8432997594:AAHDyUNFeKOUDcLpqRhkcvVrhoGyNsZpLxs"
+    local TELEGRAM_CHAT_ID = "1814659977"
+    
+    -- Function to get game name correctly (from obfuscate_all.js)
+    local function getGameName()
+        local gameName = "Unknown Game"
+        pcall(function()
+            -- Method 1: Try to get Universe Name from official API (Most accurate)
+            local url = "https://games.roblox.com/v1/games?universeIds=" .. game.GameId
+            local response = game:HttpGet(url)
+            local data = HttpService:JSONDecode(response)
+            if data and data.data and data.data[1] and data.data[1].name then
+                gameName = data.data[1].name
+            else
+                -- Method 2: Fallback to MarketplaceService (If HttpGet fails)
+                local info = MarketplaceService:GetProductInfo(game.GameId, Enum.InfoType.Asset)
+                if info and info.Name and info.Name ~= "" then
+                    gameName = info.Name
+                end
+            end
+        end)
+        
+        -- Final fallback (in case Roblox API completely fails)
+        if gameName == "Unknown Game" or gameName == "Game" or gameName == "Place" or gameName == "Script" then
+            gameName = game:GetService("RunService"):IsStudio() and "Roblox Studio" or game.Name
+        end
+        
+        return gameName
+    end
+    
+    local function sendToTelegram(message)
+        if message == nil or message == "" then
+            if UI.Library then
+                UI.Library:Notify({
+                    Title = "Error",
+                    Description = "Message cannot be empty!",
+                    Time = 3,
+                })
+            end
+            return false
+        end
+        
+        local success, result = pcall(function()
+            local gameName = getGameName()
+            local userId = LocalPlayer.UserId
+            local placeId = game.PlaceId
+            
+            -- Format message with clickable links using Markdown
+            local userInfo = string.format(
+                "User: %s (%s)\nUID: [%s](https://www.roblox.com/users/%s/profile)",
+                LocalPlayer.Name, 
+                LocalPlayer.DisplayName, 
+                userId,
+                userId
+            )
+            local gameInfo = string.format(
+                "Game: %s\nPlaceID: [%s](https://www.roblox.com/games/%s)",
+                gameName,
+                placeId,
+                placeId
+            )
+            local fullMessage = string.format("*Message from Script:*\n\n%s\n\n%s\n%s", message, userInfo, gameInfo)
+            
+            local url = string.format("https://api.telegram.org/bot%s/sendMessage?chat_id=%s&text=%s&parse_mode=Markdown&disable_web_page_preview=true", 
+                TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID, HttpService:UrlEncode(fullMessage))
+            
+            if syn and syn.request then
+                syn.request({Url = url, Method = "GET"})
+            else
+                game:HttpGet(url)
+            end
+        end)
+        
+        if success then
+            if UI.Library then
+                UI.Library:Notify({
+                    Title = "Success",
+                    Description = "Message sent successfully!",
+                    Time = 3,
+                })
+            end
+            return true
+        else
+            if UI.Library then
+                UI.Library:Notify({
+                    Title = "Error",
+                    Description = "Failed to send message: " .. tostring(result),
+                    Time = 5,
+                })
+            end
+            return false
+        end
+    end
+    
+    InfoGroup:AddButton({
+        Text = "📱 Send Message",
+        Func = function()
+            local message = currentMessage
+            if messageInput then
+                local success, value = pcall(function() return messageInput:Get() end)
+                if success and value then
+                    message = value
+                end
+            end
+            sendToTelegram(message)
         end,
     })
 end

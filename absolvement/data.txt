@@ -1,0 +1,11 @@
+local args = {
+	"Weapon",
+	Enum.UserInputState.Begin,
+	{
+		MouseLock = false,
+		MoveDirection = vector.zero,
+		TorsoRotation = CFrame.new(0, 0, 0, 0.34250903129577637, 2.9400164081039293e-08, -0.9395145177841187, 2.8419872011298253e-10, 1, 3.139653870221082e-08, 0.9395145177841187, -1.1020607537659544e-08, 0.34250903129577637),
+		MousePosition = vector.create(-170.8420867919922, 68.50703430175781, 103.60204315185547)
+	}
+}
+game:GetService("Players").LocalPlayer:WaitForChild("Remotes"):WaitForChild("RequestAction"):InvokeServer(unpack(args))

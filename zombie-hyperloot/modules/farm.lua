@@ -225,7 +225,7 @@ function Farm.teleportToAllChests()
                         fireproximityprompt(proximityPrompt)
                     end
                 end)
-                task.wait(Config.chestTeleportDelay or 0.5)
+                task.wait(0.25)
             end
         end
     end

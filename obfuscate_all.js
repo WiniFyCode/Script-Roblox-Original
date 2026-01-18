@@ -113,13 +113,12 @@ if f then return f(...) else warn(e) end`.replace(/\s+/g, ' ').trim();
 }
 
 function processFile(inPath, outPath) {
+    // Chỉ xử lý file .lua, các file khác bỏ qua hoàn toàn (không copy sang thư mục output)
     if (!inPath.endsWith('.lua')) {
-        try {
-            fs.mkdirSync(path.dirname(outPath), { recursive: true });
-            fs.copyFileSync(inPath, outPath);
-        } catch (e) {}
+        console.log(`⏭️  Skipped (not .lua): ${path.basename(inPath)}`);
         return;
     }
+
     console.log(`🚀 Protecting: ${path.basename(inPath)}...`);
     const content = fs.readFileSync(inPath, 'utf8');
     

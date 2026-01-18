@@ -1,0 +1,10 @@
+game:GetService("Players").LocalPlayer.Plot
+-> lấy plot player , trong value
+
+game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("Weapons"):WaitForChild("RequestSwing"):FireServer()
+-> RequestSwing
+
+workspace.Plots["2"].Crates["{06e41183-392e-4c8f-89a3-56c748ee6b19}"]
+workspace.Plots["2"].Crates["{0a629ec9-4456-4080-8b2e-cdd916a97b3a}"]
+-> Plots 2, Crates
+
