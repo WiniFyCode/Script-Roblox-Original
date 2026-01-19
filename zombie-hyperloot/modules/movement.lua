@@ -3,9 +3,27 @@
     Speed, NoClip, Camera Teleport, Noclip Cam
 ]]
 -- Luau typechecker in some IDEs doesn't know executor globals
-local getgc = rawget(getfenv(), "getgc")
-local setconstant = rawget(getfenv(), "setconstant")
-local getconstants = rawget(getfenv(), "getconstants")
+-- Try multiple ways to get executor functions
+local function getExecutorFunction(name)
+    -- Try from getfenv()
+    local env = getfenv()
+    if env and env[name] then
+        return env[name]
+    end
+    -- Try from rawget(getfenv())
+    local func = rawget(env or {}, name)
+    if func then return func end
+    -- Try from global (some executors expose directly)
+    if _G and _G[name] then
+        return _G[name]
+    end
+    return nil
+end
+
+local getgc = getExecutorFunction("getgc")
+local debug = getExecutorFunction("debug")
+local setconstant = (debug and debug.setconstant) or getExecutorFunction("setconstant")
+local getconstants = (debug and debug.getconstants) or getExecutorFunction("getconstants")
 
 
 local Movement = {}
@@ -282,12 +300,19 @@ end
 ----------------------------------------------------------
 -- 🔹 Noclip Cam
 function Movement.setNoclipCam(enabled)
-    local sc = (debug and debug.setconstant) or setconstant
-    local gc = (debug and debug.getconstants) or getconstants
-    if not sc or not getgc or not gc then
+    -- Re-check functions when called (they might be loaded after script init)
+    local currentGetgc = getExecutorFunction("getgc")
+    local currentDebug = getExecutorFunction("debug")
+    local currentSetconstant = (currentDebug and currentDebug.setconstant) or getExecutorFunction("setconstant")
+    local currentGetconstants = (currentDebug and currentDebug.getconstants) or getExecutorFunction("getconstants")
+    
+    if not currentSetconstant or not currentGetgc or not currentGetconstants then
         warn("Exploit không hỗ trợ Noclip Cam (thiếu setconstant hoặc getconstants)")
         return false
     end
+    
+    local sc = currentSetconstant
+    local gc = currentGetconstants
 
     local success = false
     local pop = Config.localPlayer:WaitForChild("PlayerScripts"):WaitForChild("PlayerModule"):WaitForChild("CameraModule"):WaitForChild("ZoomController"):WaitForChild("Popper")
@@ -296,7 +321,7 @@ function Movement.setNoclipCam(enabled)
     -- enabled = false → set 0.25 (noclip cam tắt, camera bình thường)
     local targetValue = enabled and 0 or 0.25
 
-    for _, v in pairs(getgc()) do
+    for _, v in pairs(currentGetgc()) do
         if type(v) == 'function' and getfenv(v).script == pop then
             for i, v1 in pairs(gc(v)) do
                 local numVal = tonumber(v1)

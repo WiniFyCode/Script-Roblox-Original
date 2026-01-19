@@ -40,7 +40,7 @@ function UI.createWindow()
     
     UI.Window = UI.Library:CreateWindow({
         Title = "Zombie Hyperloot",
-        Footer = "by WiniFy | version: 1.9.8",
+        Footer = "by WiniFy | version: 1.9.9",
         NotifySide = "Right",
         ShowCustomCursor = true,
     })
@@ -52,6 +52,12 @@ function UI.createChangelogTab()
     local ChangelogTab = UI.Window:AddTab("Changelog", "scroll-text")
     
     local ChangelogGroup = ChangelogTab:AddLeftGroupbox("Version History", "history")
+    
+    -- Version 1.9.9 - UNC Compatibility Fixes
+    ChangelogGroup:AddLabel("Version 1.9.9 - January 19, 2026", true)
+    ChangelogGroup:AddLabel("• Fixed UNC compatibility for Bunni executor\n• Fixed Gun Damage Dupe detection and hook setup\n• Fixed Noclip Cam compatibility\n• Improved executor function detection with dynamic re-checking", true)
+    
+    ChangelogGroup:AddDivider()
     
     -- Version 1.9.8 - UI Restructure & Chest Teleport Improvements
     ChangelogGroup:AddLabel("Version 1.9.8 - January 18, 2026", true)
@@ -735,14 +741,14 @@ function UI.createCombatESPTab()
     CombatLeftGroup:AddDivider()
 
     CombatLeftGroup:AddToggle("TrigerSkillDupeEnabled", {
-        Text = "Enable TrigerSkill Dupe",
+        Text = "Enable Gun Damage Dupe",
         Default = Config.trigerSkillDupeEnabled,
         Callback = function(Value)
             Config.trigerSkillDupeEnabled = Value
             if UI.Library then
                 UI.Library:Notify({
-                    Title = "TrigerSkill Dupe",
-                    Description = Value and "TrigerSkill Dupe enabled" or "TrigerSkill Dupe disabled",
+                    Title = "Gun Damage Dupe",
+                    Description = Value and "Gun Damage Dupe enabled" or "Gun Damage Dupe disabled",
                     Time = 2
                 })
             end

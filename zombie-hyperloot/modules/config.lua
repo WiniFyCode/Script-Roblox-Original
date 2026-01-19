@@ -173,7 +173,7 @@ Config.ninjaFSkillInterval = 20 -- Ninja F Skill interval
 Config.ninjaUltimateTargetMode = "Multi" -- "Single" hoặc "Multi" (bắn 1 hoặc nhiều mục tiêu)
 
 ----------------------------------------------------------
--- 🔹 TrigerSkill Dupe (GunFire)
+-- 🔹 Gun Damage Dupe (GunFire)
 Config.trigerSkillDupeEnabled = true
 Config.trigerSkillDupeCount = 5
 

@@ -1,12 +1,29 @@
 --[[
     Combat Module - Zombie Hyperloot
-    Aimbot, Hitbox, TrigerSkill Dupe, Auto Skill
+    Aimbot, Hitbox, Gun Damage Dupe, Auto Skill
 ]]
 -- Luau typechecker in some IDEs doesn't know executor globals
-local getnamecallmethod = rawget(getfenv(), "getnamecallmethod")
-local checkcaller = rawget(getfenv(), "checkcaller")
-local hookmetamethod = rawget(getfenv(), "hookmetamethod")
-local Drawing = rawget(getfenv(), "Drawing")
+-- Try multiple ways to get executor functions
+local function getExecutorFunction(name)
+    -- Try from getfenv()
+    local env = getfenv()
+    if env and env[name] then
+        return env[name]
+    end
+    -- Try from rawget(getfenv())
+    local func = rawget(env or {}, name)
+    if func then return func end
+    -- Try from global (some executors expose directly)
+    if _G and _G[name] then
+        return _G[name]
+    end
+    return nil
+end
+
+local getnamecallmethod = getExecutorFunction("getnamecallmethod")
+local checkcaller = getExecutorFunction("checkcaller")
+local hookmetamethod = getExecutorFunction("hookmetamethod")
+local Drawing = getExecutorFunction("Drawing")
 
 local Combat = {}
 local Config = nil
@@ -165,18 +182,27 @@ end
 Combat.firstDupeTriggered = false
 
 ----------------------------------------------------------
--- 🔹 TrigerSkill GunFire Dupe
+-- 🔹 Gun Damage Dupe (GunFire)
 local oldTrigerSkillNamecall = nil
 
 function Combat.setupTrigerSkillDupe()
-    if hookmetamethod and getnamecallmethod and checkcaller then
-        oldTrigerSkillNamecall = hookmetamethod(game, "__namecall", function(remoteInstance, ...)
-            local callMethod = getnamecallmethod()
+    -- Re-check functions when called (they might be loaded after script init)
+    local currentHookmetamethod = getExecutorFunction("hookmetamethod")
+    local currentGetnamecallmethod = getExecutorFunction("getnamecallmethod")
+    local currentCheckcaller = getExecutorFunction("checkcaller")
+    
+    local hasHookmetamethod = currentHookmetamethod ~= nil
+    local hasGetnamecallmethod = currentGetnamecallmethod ~= nil
+    local hasCheckcaller = currentCheckcaller ~= nil
+    
+    if hasHookmetamethod and hasGetnamecallmethod and hasCheckcaller then
+        oldTrigerSkillNamecall = currentHookmetamethod(game, "__namecall", function(remoteInstance, ...)
+            local callMethod = currentGetnamecallmethod()
             local remoteArguments = {...}
 
-            -- Check remove effects cho mọi lần bắn (không cần đợi dupe)
+            -- Check if this is GunFire FireServer call
             if callMethod == "FireServer"
-                and not checkcaller()
+                and not currentCheckcaller()
                 and typeof(remoteInstance) == "Instance"
                 and remoteInstance.Name == "TrigerSkill" then
 
@@ -189,6 +215,7 @@ function Combat.setupTrigerSkillDupe()
                     return oldTrigerSkillNamecall(remoteInstance, table.unpack(remoteArguments))
                 end
 
+                -- Handle GunFire
                 if firstArgument == "GunFire" and secondArgument == "Atk" then
                     -- Kích hoạt remove effects ngay khi bắn (không cần đợi dupe)
                     if not Combat.firstDupeTriggered and Config.removeEffectsEnabled then
@@ -197,33 +224,29 @@ function Combat.setupTrigerSkillDupe()
                             task.spawn(function()
                                 Visuals.removeAllEffects()
                             end)
-                        end
-                    end
                 end
             end
 
-            -- Logic dupe riêng biệt
-            if Config.trigerSkillDupeEnabled
-                and callMethod == "FireServer"
-                and not checkcaller()
-                and typeof(remoteInstance) == "Instance"
-                and remoteInstance.Name == "TrigerSkill" then
-
-                local firstArgument = remoteArguments[1]
-                local secondArgument = remoteArguments[2]
-
-                if firstArgument == "GunFire" and secondArgument == "Atk" then
+                    -- Logic dupe nếu được bật
+                    if Config.trigerSkillDupeEnabled then
                     for _ = 1, Config.trigerSkillDupeCount do
                         oldTrigerSkillNamecall(remoteInstance, table.unpack(remoteArguments))
                     end
-                    return
+                        return -- Return sau khi dupe, không gọi original
+                    end
+                    -- Nếu không dupe, tiếp tục gọi original ở cuối function
                 end
             end
 
             return oldTrigerSkillNamecall(remoteInstance, ...)
         end)
     else
-        warn("[ZombieHyperloot] Executor không hỗ trợ hookmetamethod - TrigerSkill dupe tắt")
+        -- Debug: show which functions are missing
+        local missing = {}
+        if not hasHookmetamethod then table.insert(missing, "hookmetamethod") end
+        if not hasGetnamecallmethod then table.insert(missing, "getnamecallmethod") end
+        if not hasCheckcaller then table.insert(missing, "checkcaller") end
+        warn("[ZombieHyperloot] Executor không hỗ trợ: " .. table.concat(missing, ", ") .. " - Gun Damage Dupe tắt")
     end
 end
 
