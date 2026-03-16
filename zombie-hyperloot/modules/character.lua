@@ -6,20 +6,13 @@
 local Character = {}
 local Config = nil
 
--- Remote IDs (từ remote logger)
-local CHARACTER_DIC_REMOTE_FUNCTION_ID = 857483751
-local EQUIP_CHARACTER_REMOTE_EVENT_ID = 1981544152
-local GET_USER_DATA_REMOTE_FUNCTION_ID = 2498358147
+-- Remote IDs (từ config)
+local CHARACTER_DIC_REMOTE_FUNCTION_ID = nil
+local EQUIP_CHARACTER_REMOTE_EVENT_ID = nil
+local GET_USER_DATA_REMOTE_FUNCTION_ID = nil
 
--- Map ID -> Tên hiển thị (có thể chỉnh tuỳ ý)
-Character.CharacterNames = {
-    [1001] = "Assault",
-    [1003] = "Wraith",
-    [1004] = "Flag Bearer",
-    [1005] = "Ninja",
-    [1006] = "Armsmaster",
-    [1007] = "Witch",
-}
+-- Map ID -> Tên hiển thị (từ config)
+Character.CharacterNames = {}
 
 -- Lưu mapping display string -> id để UI dùng lại
 Character.DisplayToId = {}
@@ -65,6 +58,15 @@ end
 
 function Character.init(config)
     Config = config
+    
+    -- Load data from Config
+    if Config.Data then
+        Character.CharacterNames = Config.Data.Characters or {}
+        local remotes = Config.Data.Remotes or {}
+        CHARACTER_DIC_REMOTE_FUNCTION_ID = remotes.CharacterDicFunction
+        EQUIP_CHARACTER_REMOTE_EVENT_ID = remotes.EquipCharacterEvent
+        GET_USER_DATA_REMOTE_FUNCTION_ID = remotes.GetUserDataFunction
+    end
 end
 
 -- Đọc characterDic từ server

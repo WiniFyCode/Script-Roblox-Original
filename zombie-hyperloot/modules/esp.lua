@@ -915,7 +915,18 @@ function ESP.teleportToBob()
 
     if nearestBob and nearestBob.part then
         -- Teleport tới Bob (cao hơn 3 studs để tránh bị stuck)
-        hrp.CFrame = CFrame.new(nearestBob.part.Position + Vector3.new(0, 3, 0))
+        local targetCFrame = CFrame.new(nearestBob.part.Position + Vector3.new(0, 3, 0))
+        
+        if Config.teleportMode == "Tween" then
+            local TweenService = game:GetService("TweenService")
+            local tweenInfo = TweenInfo.new(Config.teleportTweenSpeed or 2, Enum.EasingStyle.Linear)
+            local tween = TweenService:Create(hrp, tweenInfo, {CFrame = targetCFrame})
+            tween:Play()
+            tween.Completed:Wait()
+        else
+            hrp.CFrame = targetCFrame
+        end
+        
         return true
     end
 

@@ -37,6 +37,126 @@ Map.autoDoorEnabled = false
 Map.doorConnection = nil
 Map.lastDoorCheck = 0
 
+-- Helper Functions
+local function getPromptWorldPosition(prompt)
+    if not prompt then return nil end
+    local parent = prompt.Parent
+
+    -- Trường hợp phổ biến: ProximityPrompt nằm trong Attachment gắn vào Part
+    if parent and parent:IsA("Attachment") then
+        local parentPart = parent.Parent
+        if parentPart and parentPart:IsA("BasePart") then
+            return parentPart.Position
+        end
+    end
+
+    if parent then
+        -- Nhiều map để Prompt trực tiếp dưới Part
+        if parent:IsA("BasePart") then
+            return parent.Position
+        end
+
+        -- Trường hợp như hình bạn gửi: Task/Car là folder/model, part thật nằm dưới (vd: default)
+        local part = parent:FindFirstChildWhichIsA("BasePart", true)
+        if part then
+            return part.Position
+        end
+    end
+
+    -- Một số Prompt có thuộc tính Adornee, nhưng không phải cái nào cũng có
+    local ok, adornee = pcall(function()
+        return prompt.Adornee
+    end)
+    if ok and adornee and adornee:IsA("BasePart") then
+        return adornee.Position
+    end
+
+    return nil
+end
+
+local function firePromptOnce(prompt)
+    if prompt and typeof(fireproximityprompt) == "function" then
+        task.delay(0.25, function()
+            pcall(function()
+                if prompt and prompt.Enabled then
+                    fireproximityprompt(prompt)
+                end
+            end)
+        end)
+    end
+end
+
+local function findCarPrompt()
+    if Map.cachedCarPrompt and Map.cachedCarPrompt.Parent then
+        return Map.cachedCarPrompt
+    end
+
+    local map = Config.Workspace:FindFirstChild("Map")
+    if not map then return nil end
+
+    -- Tìm bất kỳ ProximityPrompt nào có parent tên "Car" dưới Map
+    for _, inst in ipairs(map:GetDescendants()) do
+        if inst:IsA("ProximityPrompt") then
+            local parent = inst.Parent
+            if parent and parent.Name == "Car" then
+                Map.cachedCarPrompt = inst
+                return inst
+            end
+        end
+    end
+
+    return nil
+end
+
+local function findCarPart()
+    local map = Config.Workspace:FindFirstChild("Map")
+    if not map then return nil end
+
+    for _, inst in ipairs(map:GetDescendants()) do
+        if inst:IsA("BasePart") and inst.Name == "Car" then
+            return inst
+        end
+    end
+
+    return nil
+end
+
+local function findTaskPrompt()
+    if Map.cachedTaskPrompt and Map.cachedTaskPrompt.Parent then
+        return Map.cachedTaskPrompt
+    end
+
+    local map = Config.Workspace:FindFirstChild("Map")
+    if not map then return nil end
+
+    -- Tìm bất kỳ ProximityPrompt nào có parent tên "Task" dưới Map
+    for _, inst in ipairs(map:GetDescendants()) do
+        if inst:IsA("ProximityPrompt") then
+            local parent = inst.Parent
+            if parent and parent.Name == "Task" then
+                Map.cachedTaskPrompt = inst
+                return inst
+            end
+        end
+    end
+
+    return nil
+end
+
+local function findTaskPart()
+    local map = Config.Workspace:FindFirstChild("Map")
+    if not map then return nil end
+
+    for _, inst in ipairs(map:GetDescendants()) do
+        if inst:IsA("BasePart") and inst.Name == "Task" then
+            return inst
+        end
+    end
+
+    return nil
+end
+
+
 function Map.init(config)
     Config = config
 end
@@ -95,7 +215,18 @@ function Map.teleportToWaitAreaAndStart()
         return
     end
 
-    hrp.CFrame = touchPart.CFrame + Vector3.new(0, 4, 0)
+    local targetCFrame = touchPart.CFrame + Vector3.new(0, 4, 0)
+    
+    if Config.teleportMode == "Tween" then
+        local TweenService = game:GetService("TweenService")
+        local tweenInfo = TweenInfo.new(Config.teleportTweenSpeed or 2, Enum.EasingStyle.Linear)
+        local tween = TweenService:Create(hrp, tweenInfo, {CFrame = targetCFrame})
+        tween:Play()
+        tween.Completed:Wait()
+    else
+        hrp.CFrame = targetCFrame
+    end
+    
     task.wait(0.5)
 
     local replicatedStorage = game:GetService("ReplicatedStorage")
@@ -216,129 +347,103 @@ function Map.teleportToSupply(supplyData)
 
     local targetPos = supplyData.position
 
-    -- Chỉ teleport tới supply (cao hơn 5 studs để tránh bị stuck)
-    hrp.CFrame = CFrame.new(targetPos + Vector3.new(0, 5, 0))
+    if Config.teleportMode == "Tween" then
+        local TweenService = game:GetService("TweenService")
+        local tweenInfo = TweenInfo.new(Config.teleportTweenSpeed or 2, Enum.EasingStyle.Linear)
+        local tween = TweenService:Create(hrp, tweenInfo, {CFrame = CFrame.new(targetPos + Vector3.new(0, 5, 0))})
+        tween:Play()
+        tween.Completed:Wait()
+    else
+        hrp.CFrame = CFrame.new(targetPos + Vector3.new(0, 5, 0))
+    end
 end
 
-local function getPromptWorldPosition(prompt)
-    if not prompt then return nil end
-    local parent = prompt.Parent
-
-    -- Trường hợp phổ biến: ProximityPrompt nằm trong Attachment gắn vào Part
-    if parent and parent:IsA("Attachment") then
-        local parentPart = parent.Parent
-        if parentPart and parentPart:IsA("BasePart") then
-            return parentPart.Position
-        end
-    end
-
-    if parent then
-        -- Nhiều map để Prompt trực tiếp dưới Part
-        if parent:IsA("BasePart") then
-            return parent.Position
-        end
-
-        -- Trường hợp như hình bạn gửi: Task/Car là folder/model, part thật nằm dưới (vd: default)
-        local part = parent:FindFirstChildWhichIsA("BasePart", true)
-        if part then
-            return part.Position
-        end
-    end
-
-    -- Một số Prompt có thuộc tính Adornee, nhưng không phải cái nào cũng có
-    local ok, adornee = pcall(function()
-        return prompt.Adornee
-    end)
-    if ok and adornee and adornee:IsA("BasePart") then
-        return adornee.Position
-    end
-
-    return nil
-end
-
-local function firePromptOnce(prompt)
-    if prompt and typeof(fireproximityprompt) == "function" then
-        task.delay(0.25, function()
-            pcall(function()
-                if prompt and prompt.Enabled then
-                    fireproximityprompt(prompt)
+function Map.teleportToTask()
+    if Config.scriptUnloaded then return end
+    
+    -- Find Task Prompt
+    local prompt = Map.cachedTaskPrompt
+    if not prompt or not prompt.Parent then
+        local map = Config.Workspace:FindFirstChild("Map")
+        if map then
+            for _, inst in ipairs(map:GetDescendants()) do
+                if inst:IsA("ProximityPrompt") then
+                    local parent = inst.Parent
+                    if parent and parent.Name == "Task" then
+                        prompt = inst
+                        Map.cachedTaskPrompt = inst
+                        break
+                    end
                 end
-            end)
-        end)
-    end
-end
-
-local function findCarPrompt()
-    if Map.cachedCarPrompt and Map.cachedCarPrompt.Parent then
-        return Map.cachedCarPrompt
-    end
-
-    local map = Config.Workspace:FindFirstChild("Map")
-    if not map then return nil end
-
-    -- Tìm bất kỳ ProximityPrompt nào có parent tên "Car" dưới Map
-    for _, inst in ipairs(map:GetDescendants()) do
-        if inst:IsA("ProximityPrompt") then
-            local parent = inst.Parent
-            if parent and parent.Name == "Car" then
-                Map.cachedCarPrompt = inst
-                return inst
             end
         end
     end
-
-    return nil
+    
+    if not prompt then
+        warn("[MapTeleport] Không tìm thấy Task Prompt")
+        return
+    end
+    
+    local targetPos = getPromptWorldPosition(prompt)
+    if not targetPos then
+        warn("[MapTeleport] Không xác định được vị trí Task")
+        return
+    end
+    
+    local char = Config.localPlayer.Character
+    local hrp = char and char:FindFirstChild("HumanoidRootPart")
+    if not hrp then return end
+    
+    local targetCFrame = CFrame.new(targetPos + Vector3.new(0, 3, 0))
+    
+    if Config.teleportMode == "Tween" then
+        local TweenService = game:GetService("TweenService")
+        local tweenInfo = TweenInfo.new(Config.teleportTweenSpeed or 2, Enum.EasingStyle.Linear)
+        local tween = TweenService:Create(hrp, tweenInfo, {CFrame = targetCFrame})
+        tween:Play()
+        tween.Completed:Wait()
+    else
+        hrp.CFrame = targetCFrame
+    end
+    
+    firePromptOnce(prompt)
 end
 
-local function findCarPart()
-    local map = Config.Workspace:FindFirstChild("Map")
-    if not map then return nil end
-
-    for _, inst in ipairs(map:GetDescendants()) do
-        if inst:IsA("BasePart") and inst.Name == "Car" then
-            return inst
-        end
+function Map.teleportToCar()
+    if Config.scriptUnloaded then return end
+    
+    local prompt = findCarPrompt()
+    if not prompt then
+        warn("[MapTeleport] Không tìm thấy Car Prompt")
+        return
     end
-
-    return nil
+    
+    local targetPos = getPromptWorldPosition(prompt)
+    if not targetPos then
+        warn("[MapTeleport] Không xác định được vị trí Car")
+        return
+    end
+    
+    local char = Config.localPlayer.Character
+    local hrp = char and char:FindFirstChild("HumanoidRootPart")
+    if not hrp then return end
+    
+    local targetCFrame = CFrame.new(targetPos + Vector3.new(0, 3, 0))
+    
+    if Config.teleportMode == "Tween" then
+        local TweenService = game:GetService("TweenService")
+        local tweenInfo = TweenInfo.new(Config.teleportTweenSpeed or 2, Enum.EasingStyle.Linear)
+        local tween = TweenService:Create(hrp, tweenInfo, {CFrame = targetCFrame})
+        tween:Play()
+        tween.Completed:Wait()
+    else
+        hrp.CFrame = targetCFrame
+    end
+    
+    firePromptOnce(prompt)
 end
 
-local function findTaskPrompt()
-    if Map.cachedTaskPrompt and Map.cachedTaskPrompt.Parent then
-        return Map.cachedTaskPrompt
-    end
-
-    local map = Config.Workspace:FindFirstChild("Map")
-    if not map then return nil end
-
-    -- Tìm bất kỳ ProximityPrompt nào có parent tên "Task" dưới Map
-    for _, inst in ipairs(map:GetDescendants()) do
-        if inst:IsA("ProximityPrompt") then
-            local parent = inst.Parent
-            if parent and parent.Name == "Task" then
-                Map.cachedTaskPrompt = inst
-                return inst
-            end
-        end
-    end
-
-    return nil
-end
-
-local function findTaskPart()
-    local map = Config.Workspace:FindFirstChild("Map")
-    if not map then return nil end
-
-    for _, inst in ipairs(map:GetDescendants()) do
-        if inst:IsA("BasePart") and inst.Name == "Task" then
-            return inst
-        end
-    end
-
-    return nil
-end
-
-
+-- Helpers moved to top
 function Map.createSupplyUI()
     -- Xóa UI cũ nếu có
     if Map.supplyScreenGui then
@@ -431,7 +536,18 @@ function Map.createSupplyUI()
             local char = Config.localPlayer.Character
             local hrp = char and char:FindFirstChild("HumanoidRootPart")
             if hrp and worldPos then
-                hrp.CFrame = CFrame.new(worldPos + Vector3.new(0, 5, 0))
+                local targetCFrame = CFrame.new(worldPos + Vector3.new(0, 5, 0))
+                
+                if Config.teleportMode == "Tween" then
+                    local TweenService = game:GetService("TweenService")
+                    local tweenInfo = TweenInfo.new(Config.teleportTweenSpeed or 2, Enum.EasingStyle.Linear)
+                    local tween = TweenService:Create(hrp, tweenInfo, {CFrame = targetCFrame})
+                    tween:Play()
+                    tween.Completed:Wait()
+                else
+                    hrp.CFrame = targetCFrame
+                end
+
                 if prompt then
                     firePromptOnce(prompt)
                 end
@@ -519,7 +635,18 @@ function Map.createSupplyUI()
             local char = Config.localPlayer.Character
             local hrp = char and char:FindFirstChild("HumanoidRootPart")
             if hrp and worldPos then
-                hrp.CFrame = CFrame.new(worldPos + Vector3.new(0, 5, 0))
+                local targetCFrame = CFrame.new(worldPos + Vector3.new(0, 5, 0))
+                
+                if Config.teleportMode == "Tween" then
+                    local TweenService = game:GetService("TweenService")
+                    local tweenInfo = TweenInfo.new(Config.teleportTweenSpeed or 2, Enum.EasingStyle.Linear)
+                    local tween = TweenService:Create(hrp, tweenInfo, {CFrame = targetCFrame})
+                    tween:Play()
+                    tween.Completed:Wait()
+                else
+                    hrp.CFrame = targetCFrame
+                end
+
                 if prompt then
                     firePromptOnce(prompt)
                 end

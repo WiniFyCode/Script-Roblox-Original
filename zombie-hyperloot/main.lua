@@ -7,36 +7,51 @@
 
 ----------------------------------------------------------
 -- 🔹 Load Modules
-local Config, Visuals, Combat, ESP, Movement, Map, Farm, HUD, UI, Character
+local Config, Visuals, Combat, ESP, Movement, Map, Farm, HUD, UI, Character, Loader
 
+-- 1. Load & Start Loader
+Loader = loadstring(game:HttpGet("https://raw.githubusercontent.com/WiniFyCode/Roblox/refs/heads/main/zombie-hyperloot/modules/loader.lua"))()
+Loader.start()
+Loader.update(0.1, "Loading Config...")
 Config = loadstring(game:HttpGet("https://raw.githubusercontent.com/WiniFyCode/Roblox/refs/heads/main/zombie-hyperloot/modules/config.lua"))()
 
+Loader.update(0.2, "Loading Visuals...")
 Visuals = loadstring(game:HttpGet("https://raw.githubusercontent.com/WiniFyCode/Roblox/refs/heads/main/zombie-hyperloot/modules/visuals.lua"))()
 Visuals.init(Config)
 
+Loader.update(0.3, "Loading Combat...")
 Combat = loadstring(game:HttpGet("https://raw.githubusercontent.com/WiniFyCode/Roblox/refs/heads/main/zombie-hyperloot/modules/combat.lua"))()
 Combat.init(Config, Visuals)
 
+Loader.update(0.4, "Loading ESP...")
 ESP = loadstring(game:HttpGet("https://raw.githubusercontent.com/WiniFyCode/Roblox/refs/heads/main/zombie-hyperloot/modules/esp.lua"))()
 ESP.init(Config)
 
+Loader.update(0.5, "Loading Movement...")
 Movement = loadstring(game:HttpGet("https://raw.githubusercontent.com/WiniFyCode/Roblox/refs/heads/main/zombie-hyperloot/modules/movement.lua"))()
 Movement.init(Config)
 
+Loader.update(0.6, "Loading Map...")
 Map = loadstring(game:HttpGet("https://raw.githubusercontent.com/WiniFyCode/Roblox/refs/heads/main/zombie-hyperloot/modules/map.lua"))()
 Map.init(Config)
-
+    
+Loader.update(0.7, "Loading Farm...")
 Farm = loadstring(game:HttpGet("https://raw.githubusercontent.com/WiniFyCode/Roblox/refs/heads/main/zombie-hyperloot/modules/farm.lua"))()
 Farm.init(Config, ESP)
 
+Loader.update(0.8, "Loading HUD & Character...")
 HUD = loadstring(game:HttpGet("https://raw.githubusercontent.com/WiniFyCode/Roblox/refs/heads/main/zombie-hyperloot/modules/hud.lua"))()
 HUD.init(Config)
 
 Character = loadstring(game:HttpGet("https://raw.githubusercontent.com/WiniFyCode/Roblox/refs/heads/main/zombie-hyperloot/modules/character.lua"))()
 Character.init(Config)
 
+Loader.update(0.9, "Starting UI...")
 UI = loadstring(game:HttpGet("https://raw.githubusercontent.com/WiniFyCode/Roblox/refs/heads/main/zombie-hyperloot/modules/ui.lua"))()
 UI.init(Config, Combat, ESP, Movement, Map, Farm, HUD, Visuals, Character)
+
+-- Stop Loader
+Loader.stop()
 
 ----------------------------------------------------------
 -- 🔹 Cleanup Function
@@ -52,7 +67,7 @@ local function cleanupScript()
     Config.espZombieEnabled = false
     Config.espChestEnabled = false
     Config.hitboxEnabled = false
-    Config.teleportEnabled = false
+    Config.teleportEnabled = true
     Config.cameraTeleportEnabled = false
     Config.cameraTeleportActive = false
     Config.autoBulletBoxEnabled = false

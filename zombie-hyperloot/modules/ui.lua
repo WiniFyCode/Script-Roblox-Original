@@ -32,7 +32,12 @@ function UI.loadLibraries()
     -- Store Library reference in Config for notifications
     Config.UI.Library = UI.Library
     Config.UI.Fluent = UI.Library -- Keep for backward compatibility with notifications
+    
+    -- Store Toggles and Options for easy access
+    UI.Toggles = UI.Library.Toggles
+    UI.Options = UI.Library.Options
 end
+
 
 function UI.createWindow()
     UI.Library.ForceCheckbox = false
@@ -40,10 +45,18 @@ function UI.createWindow()
     
     UI.Window = UI.Library:CreateWindow({
         Title = "Zombie Hyperloot",
-        Footer = "by WiniFy | version: 1.9.9",
+        Footer = "by WiniFy | version: 2.0.0",
         NotifySide = "Right",
         ShowCustomCursor = true,
     })
+
+    if UI.Library then
+        UI.Library:Notify({
+            Title = "Notice",
+            Description = "I have stopped updating this script.",
+            Time = 5,
+        })
+    end
 end
 
 ----------------------------------------------------------
@@ -51,7 +64,32 @@ end
 function UI.createChangelogTab()
     local ChangelogTab = UI.Window:AddTab("Changelog", "scroll-text")
     
+    local WarningGroup = ChangelogTab:AddLeftGroupbox("Important Warning", "warning")
+    WarningGroup:AddLabel("⚠️ PLAY SOLO TO AVOID REPORTS ⚠️", true)
+
     local ChangelogGroup = ChangelogTab:AddLeftGroupbox("Version History", "history")
+    
+    -- Version 2.2.1 - Potion Toggle Feature
+    ChangelogGroup:AddLabel("Version 2.2.1 - February 2, 2026", true)
+    ChangelogGroup:AddLabel("• Added Potion Toggle: Buy + Drink vs Use from Inventory\n• Toggle between buying and using potions or using from inventory only\n• Updated all potion buttons (Common/Rare: Attack/Health/Luck) to respect toggle setting", true)
+    ChangelogGroup:AddDivider()
+    
+    -- Version 2.2.0 - AFK Tab with Auto Draw Gift
+    ChangelogGroup:AddLabel("Version 2.2.0 - February 2, 2026", true)
+    ChangelogGroup:AddLabel("• Added AFK tab with Auto Draw Gift feature\n• Auto Draw Gift: Automatically draw gift every second\n• Toggle on/off functionality with notifications", true)
+    ChangelogGroup:AddDivider()
+
+    -- Version 2.1.0 - Loading Screen & Blacklist Update
+    ChangelogGroup:AddLabel("Version 2.1.0 - January 23, 2026", true)
+    ChangelogGroup:AddLabel("• Added Professional Loading Screen\n• Improved Module Loading System\n• Updated Blacklist System\n• Optimized Startup Performance", true)
+    
+    ChangelogGroup:AddDivider()
+
+    -- Version 2.0.0 - Teleport System Overhaul
+    ChangelogGroup:AddLabel("Version 2.0.0 - January 20, 2026", true)
+    ChangelogGroup:AddLabel("• Major Teleport System Overhaul\n• Added Teleport Mode: Tween (Smooth) vs Instant (Fast)\n• Applied Teleport Mode to ALL teleports (Chest, Map Start, Supply, Task, Car, Camera Return)\n• Centralized Data management in Config\n• Added Task & Car teleport buttons in Supply ESP", true)
+    
+    ChangelogGroup:AddDivider()
     
     -- Version 1.9.9 - UNC Compatibility Fixes
     ChangelogGroup:AddLabel("Version 1.9.9 - January 19, 2026", true)
@@ -84,149 +122,7 @@ function UI.createChangelogTab()
     local InfoGroup = ChangelogTab:AddRightGroupbox("Information", "info")
 
     InfoGroup:AddLabel("Script: Zombie Hyperloot\nAuthor: WiniFy", true)
-    InfoGroup:AddLabel("If you have any questions, suggestions or bugs, please report them here:", true)
-    
-    InfoGroup:AddButton({
-        Text = "Copy Discord Server",
-        Func = function()
-            setclipboard("https://discord.gg/2vdHSbdy")
-            if UI.Library then
-                UI.Library:Notify({
-                    Title = "Discord",
-                    Description = "Discord server link copied to clipboard!",
-                    Time = 2,
-                })
-            end
-        end,
-    })
-    
-    InfoGroup:AddDivider()
-    InfoGroup:AddLabel("Send Message Directly:", true)
-    
-    local currentMessage = ""
-    local messageInput = InfoGroup:AddInput("UserMessage", {
-        Text = "Your Message",
-        Tooltip = "Enter your message here",
-        Default = "",
-        Placeholder = "Type your message...",
-        Callback = function(Value)
-            currentMessage = Value or ""
-        end
-    })
-    
-    local HttpService = game:GetService("HttpService")
-    local Players = game:GetService("Players")
-    local LocalPlayer = Players.LocalPlayer
-    local MarketplaceService = game:GetService("MarketplaceService")
-    
-    -- Telegram Configuration (from obfuscate_all.js)
-    local TELEGRAM_BOT_TOKEN = "8432997594:AAHDyUNFeKOUDcLpqRhkcvVrhoGyNsZpLxs"
-    local TELEGRAM_CHAT_ID = "1814659977"
-    
-    -- Function to get game name correctly (from obfuscate_all.js)
-    local function getGameName()
-        local gameName = "Unknown Game"
-        pcall(function()
-            -- Method 1: Try to get Universe Name from official API (Most accurate)
-            local url = "https://games.roblox.com/v1/games?universeIds=" .. game.GameId
-            local response = game:HttpGet(url)
-            local data = HttpService:JSONDecode(response)
-            if data and data.data and data.data[1] and data.data[1].name then
-                gameName = data.data[1].name
-            else
-                -- Method 2: Fallback to MarketplaceService (If HttpGet fails)
-                local info = MarketplaceService:GetProductInfo(game.GameId, Enum.InfoType.Asset)
-                if info and info.Name and info.Name ~= "" then
-                    gameName = info.Name
-                end
-            end
-        end)
-        
-        -- Final fallback (in case Roblox API completely fails)
-        if gameName == "Unknown Game" or gameName == "Game" or gameName == "Place" or gameName == "Script" then
-            gameName = game:GetService("RunService"):IsStudio() and "Roblox Studio" or game.Name
-        end
-        
-        return gameName
-    end
-    
-    local function sendToTelegram(message)
-        if message == nil or message == "" then
-            if UI.Library then
-                UI.Library:Notify({
-                    Title = "Error",
-                    Description = "Message cannot be empty!",
-                    Time = 3,
-                })
-            end
-            return false
-        end
-        
-        local success, result = pcall(function()
-            local gameName = getGameName()
-            local userId = LocalPlayer.UserId
-            local placeId = game.PlaceId
-            
-            -- Format message with clickable links using Markdown
-            local userInfo = string.format(
-                "User: %s (%s)\nUID: [%s](https://www.roblox.com/users/%s/profile)",
-                LocalPlayer.Name, 
-                LocalPlayer.DisplayName, 
-                userId,
-                userId
-            )
-            local gameInfo = string.format(
-                "Game: %s\nPlaceID: [%s](https://www.roblox.com/games/%s)",
-                gameName,
-                placeId,
-                placeId
-            )
-            local fullMessage = string.format("*Message from Script:*\n\n%s\n\n%s\n%s", message, userInfo, gameInfo)
-            
-            local url = string.format("https://api.telegram.org/bot%s/sendMessage?chat_id=%s&text=%s&parse_mode=Markdown&disable_web_page_preview=true", 
-                TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID, HttpService:UrlEncode(fullMessage))
-            
-            if syn and syn.request then
-                syn.request({Url = url, Method = "GET"})
-            else
-                game:HttpGet(url)
-            end
-        end)
-        
-        if success then
-            if UI.Library then
-                UI.Library:Notify({
-                    Title = "Success",
-                    Description = "Message sent successfully!",
-                    Time = 3,
-                })
-            end
-            return true
-        else
-            if UI.Library then
-                UI.Library:Notify({
-                    Title = "Error",
-                    Description = "Failed to send message: " .. tostring(result),
-                    Time = 5,
-                })
-            end
-            return false
-        end
-    end
-    
-    InfoGroup:AddButton({
-        Text = "📱 Send Message",
-        Func = function()
-            local message = currentMessage
-            if messageInput then
-                local success, value = pcall(function() return messageInput:Get() end)
-                if success and value then
-                    message = value
-                end
-            end
-            sendToTelegram(message)
-        end,
-    })
+    InfoGroup:AddLabel("I have stopped updating this script.", true)
 end
 
 ----------------------------------------------------------
@@ -1418,6 +1314,38 @@ function UI.createFarmEventTab()
     -- Left Groupbox: Farm
     local FarmLeftGroup = FarmEventTab:AddLeftGroupbox("Farm")
 
+    FarmLeftGroup:AddDropdown("TeleportMode", {
+        Values = {"Tween", "Instant"},
+        Default = Config.teleportMode or "Tween",
+        Multi = false,
+        Text = "Teleport Mode",
+        Tooltip = "Select teleport mode (Tween: Smooth, Instant: Fast)",
+        Callback = function(Value)
+            Config.teleportMode = Value
+        end
+    })
+
+    FarmLeftGroup:AddSlider("TeleportTweenSpeed", {
+        Text = "Tween Speed (s)",
+        Default = Config.teleportTweenSpeed or 1,
+        Min = 0.5, Max = 5, Rounding = 1,
+        Callback = function(Value)
+            Config.teleportTweenSpeed = Value
+        end
+    })
+
+    FarmLeftGroup:AddSlider("ChestTeleportDelay", {
+        Text = "Chest Teleport Delay (s)",
+        Tooltip = "Delay time between chests when teleporting",
+        Default = Config.chestTeleportDelay or 0.5,
+        Min = 0.5, Max = 2.0, Rounding = 1,
+        Callback = function(Value)
+            Config.chestTeleportDelay = Value
+        end
+    })
+
+    FarmLeftGroup:AddDivider()
+
     FarmLeftGroup:AddToggle("AutoBulletBox", {
         Text = "Auto BulletBox + Items",
         Default = Config.autoBulletBoxEnabled,
@@ -1448,16 +1376,6 @@ function UI.createFarmEventTab()
         end
     })
 
-    FarmLeftGroup:AddSlider("ChestTeleportDelay", {
-        Text = "Chest Teleport Delay (s)",
-        Tooltip = "Delay time between chests when teleporting",
-        Default = Config.chestTeleportDelay or 0.5,
-        Min = 0.5, Max = 2.0, Rounding = 1,
-        Callback = function(Value)
-            Config.chestTeleportDelay = Value
-        end
-    })
-
     FarmLeftGroup:AddButton({
         Text = "Teleport to All Chests",
         Func = function()
@@ -1476,51 +1394,107 @@ function UI.createFarmEventTab()
     })
 
     FarmLeftGroup:AddDivider()
+    
+    FarmLeftGroup:AddToggle("PotionBuyAndDrink", {
+        Text = "Potion: Buy + Drink",
+        Default = Config.potionBuyAndDrinkEnabled,
+        Tooltip = "ON: Buy and use | OFF: Use from inventory only",
+        Callback = function(Value)
+            Config.potionBuyAndDrinkEnabled = Value
+            if UI.Library then
+                UI.Library:Notify({
+                    Title = "Potion",
+                    Description = Value and "Potion: Buy + Drink enabled" or "Potion: Use from inventory only",
+                    Time = 2
+                })
+            end
+        end
+    })
+    
     FarmLeftGroup:AddLabel("Potions - Common")
 
     FarmLeftGroup:AddButton({
-        Text = "Common Attack (Buy + Drink)",
+        Text = "Common Attack",
         Func = function()
-            if Farm and Farm.buyAndDrinkPotion then
-                Farm.buyAndDrinkPotion("CommonAttack")
-                if UI.Library then
-                    UI.Library:Notify({
-                        Title = "Potion",
-                        Description = "Common Attack potion purchased and consumed!",
-                        Time = 3
-                    })
+            if Config.potionBuyAndDrinkEnabled then
+                if Farm and Farm.buyAndDrinkPotion then
+                    Farm.buyAndDrinkPotion("CommonAttack")
+                    if UI.Library then
+                        UI.Library:Notify({
+                            Title = "Potion",
+                            Description = "Common Attack potion purchased and consumed!",
+                            Time = 3
+                        })
+                    end
+                end
+            else
+                if Farm and Farm.drinkPotion then
+                    Farm.drinkPotion("CommonAttack")
+                    if UI.Library then
+                        UI.Library:Notify({
+                            Title = "Potion",
+                            Description = "Common Attack potion consumed from inventory!",
+                            Time = 3
+                        })
+                    end
                 end
             end
         end
     })
 
     FarmLeftGroup:AddButton({
-        Text = "Common Health (Buy + Drink)",
+        Text = "Common Health",
         Func = function()
-            if Farm and Farm.buyAndDrinkPotion then
-                Farm.buyAndDrinkPotion("CommonHealth")
-                if UI.Library then
-                    UI.Library:Notify({
-                        Title = "Potion",
-                        Description = "Common Health potion purchased and consumed!",
-                        Time = 3
-                    })
+            if Config.potionBuyAndDrinkEnabled then
+                if Farm and Farm.buyAndDrinkPotion then
+                    Farm.buyAndDrinkPotion("CommonHealth")
+                    if UI.Library then
+                        UI.Library:Notify({
+                            Title = "Potion",
+                            Description = "Common Health potion purchased and consumed!",
+                            Time = 3
+                        })
+                    end
+                end
+            else
+                if Farm and Farm.drinkPotion then
+                    Farm.drinkPotion("CommonHealth")
+                    if UI.Library then
+                        UI.Library:Notify({
+                            Title = "Potion",
+                            Description = "Common Health potion consumed from inventory!",
+                            Time = 3
+                        })
+                    end
                 end
             end
         end
     })
 
     FarmLeftGroup:AddButton({
-        Text = "Common Luck (Buy + Drink)",
+        Text = "Common Luck",
         Func = function()
-            if Farm and Farm.buyAndDrinkPotion then
-                Farm.buyAndDrinkPotion("CommonLuck")
-                if UI.Library then
-                    UI.Library:Notify({
-                        Title = "Potion",
-                        Description = "Common Luck potion purchased and consumed!",
-                        Time = 3
-                    })
+            if Config.potionBuyAndDrinkEnabled then
+                if Farm and Farm.buyAndDrinkPotion then
+                    Farm.buyAndDrinkPotion("CommonLuck")
+                    if UI.Library then
+                        UI.Library:Notify({
+                            Title = "Potion",
+                            Description = "Common Luck potion purchased and consumed!",
+                            Time = 3
+                        })
+                    end
+                end
+            else
+                if Farm and Farm.drinkPotion then
+                    Farm.drinkPotion("CommonLuck")
+                    if UI.Library then
+                        UI.Library:Notify({
+                            Title = "Potion",
+                            Description = "Common Luck potion consumed from inventory!",
+                            Time = 3
+                        })
+                    end
                 end
             end
         end
@@ -1530,48 +1504,87 @@ function UI.createFarmEventTab()
     FarmLeftGroup:AddLabel("Potions - Rare")
 
     FarmLeftGroup:AddButton({
-        Text = "Rare Attack (Buy + Drink)",
+        Text = "Rare Attack",
         Func = function()
-            if Farm and Farm.buyAndDrinkPotion then
-                Farm.buyAndDrinkPotion("RareAttack")
-                if UI.Library then
-                    UI.Library:Notify({
-                        Title = "Potion",
-                        Description = "Rare Attack potion purchased and consumed!",
-                        Time = 3
-                    })
+            if Config.potionBuyAndDrinkEnabled then
+                if Farm and Farm.buyAndDrinkPotion then
+                    Farm.buyAndDrinkPotion("RareAttack")
+                    if UI.Library then
+                        UI.Library:Notify({
+                            Title = "Potion",
+                            Description = "Rare Attack potion purchased and consumed!",
+                            Time = 3
+                        })
+                    end
+                end
+            else
+                if Farm and Farm.drinkPotion then
+                    Farm.drinkPotion("RareAttack")
+                    if UI.Library then
+                        UI.Library:Notify({
+                            Title = "Potion",
+                            Description = "Rare Attack potion consumed from inventory!",
+                            Time = 3
+                        })
+                    end
                 end
             end
         end
     })
 
     FarmLeftGroup:AddButton({
-        Text = "Rare Health (Buy + Drink)",
+        Text = "Rare Health",
         Func = function()
-            if Farm and Farm.buyAndDrinkPotion then
-                Farm.buyAndDrinkPotion("RareHealth")
-                if UI.Library then
-                    UI.Library:Notify({
-                        Title = "Potion",
-                        Description = "Rare Health potion purchased and consumed!",
-                        Time = 3
-                    })
+            if Config.potionBuyAndDrinkEnabled then
+                if Farm and Farm.buyAndDrinkPotion then
+                    Farm.buyAndDrinkPotion("RareHealth")
+                    if UI.Library then
+                        UI.Library:Notify({
+                            Title = "Potion",
+                            Description = "Rare Health potion purchased and consumed!",
+                            Time = 3
+                        })
+                    end
+                end
+            else
+                if Farm and Farm.drinkPotion then
+                    Farm.drinkPotion("RareHealth")
+                    if UI.Library then
+                        UI.Library:Notify({
+                            Title = "Potion",
+                            Description = "Rare Health potion consumed from inventory!",
+                            Time = 3
+                        })
+                    end
                 end
             end
         end
     })
 
     FarmLeftGroup:AddButton({
-        Text = "Rare Luck (Buy + Drink)",
+        Text = "Rare Luck",
         Func = function()
-            if Farm and Farm.buyAndDrinkPotion then
-                Farm.buyAndDrinkPotion("RareLuck")
-                if UI.Library then
-                    UI.Library:Notify({
-                        Title = "Potion",
-                        Description = "Rare Luck potion purchased and consumed!",
-                        Time = 3
-                    })
+            if Config.potionBuyAndDrinkEnabled then
+                if Farm and Farm.buyAndDrinkPotion then
+                    Farm.buyAndDrinkPotion("RareLuck")
+                    if UI.Library then
+                        UI.Library:Notify({
+                            Title = "Potion",
+                            Description = "Rare Luck potion purchased and consumed!",
+                            Time = 3
+                        })
+                    end
+                end
+            else
+                if Farm and Farm.drinkPotion then
+                    Farm.drinkPotion("RareLuck")
+                    if UI.Library then
+                        UI.Library:Notify({
+                            Title = "Potion",
+                            Description = "Rare Luck potion consumed from inventory!",
+                            Time = 3
+                        })
+                    end
                 end
             end
         end
@@ -2067,6 +2080,8 @@ function UI.createCharacterTab()
 
     return CharacterTab
 end
+
+
 
 ----------------------------------------------------------
 -- 🔹 Settings Tab
@@ -2696,6 +2711,7 @@ function UI.buildAllTabs(cleanupCallback)
     UI.createMovementMapTab()      -- Movement & Map merged
     UI.createFarmEventTab()        -- Farm & Event merged
     UI.createCharacterTab()       -- Character (unchanged)
+    UI.createAFKTab()             -- AFK tab
     UI.createVisualsHUDTab()       -- Visuals & HUD merged
     UI.createServerTab()           -- Server (unchanged)
     UI.createSettingsTab(cleanupCallback)  -- Settings
@@ -2709,8 +2725,59 @@ function UI.buildAllTabs(cleanupCallback)
 end
 
 ----------------------------------------------------------
+-- 🔹 AFK Tab
+function UI.createAFKTab()
+    local AFKTab = UI.Window:AddTab("AFK", "gift")
+    local AFKGroup = AFKTab:AddLeftGroupbox("AFK Features", "gift")
+
+    AFKGroup:AddToggle("AutoDrawGift", {
+        Text = "Auto Draw Gift",
+        Default = false,
+        Tooltip = "Automatically draw gift every second",
+        Callback = function(Value)
+            if Value then
+                if not UI._afkDrawConnection then
+                    UI._afkDrawConnection = task.spawn(function()
+                        while UI.Toggles.AutoDrawGift and UI.Toggles.AutoDrawGift.Value do
+                            local args = {940454352}
+                            game:GetService("ReplicatedStorage"):WaitForChild("Remote"):WaitForChild("RemoteEvent"):FireServer(unpack(args))
+                            task.wait(1)
+                        end
+                    end)
+                end
+                
+                if UI.Library then
+                    UI.Library:Notify({
+                        Title = "AFK",
+                        Description = "Auto Draw Gift enabled",
+                        Time = 2
+                    })
+                end
+            else
+                if UI._afkDrawConnection then
+                    UI._afkDrawConnection = nil
+                end
+                
+                if UI.Library then
+                    UI.Library:Notify({
+                        Title = "AFK",
+                        Description = "Auto Draw Gift disabled",
+                        Time = 2
+                    })
+                end
+            end
+        end
+    })
+end
+
+----------------------------------------------------------
 -- 🔹 Cleanup
 function UI.cleanup()
+    -- Stop AFK draw connection
+    if UI._afkDrawConnection then
+        UI._afkDrawConnection = nil
+    end
+    
     if UI.Window and UI.Window.Destroy then
         pcall(function() UI.Window:Destroy() end)
     end

@@ -6,6 +6,52 @@
 local Config = {}
 
 ----------------------------------------------------------
+-- 🔹 Static Data & Constants (Extracted for easy updates)
+Config.Data = {
+    -- Character ID Mapping
+    Characters = {
+        [1001] = "Assault",
+        [1003] = "Wraith",
+        [1004] = "Flag Bearer",
+        [1005] = "Ninja",
+        [1006] = "Armsmaster",
+        [1007] = "Witch",
+    },
+    
+    -- Remote IDs
+    Remotes = {
+        -- Character
+        CharacterDicFunction = 857483751,
+        EquipCharacterEvent = 1981544152,
+        GetUserDataFunction = 2498358147,
+        
+        -- Potion
+        PotionShopEvent = 3306896484,
+        PotionDrinkEvent = 2791618369,
+        
+        -- Gifts
+        ChristmasGiftArgs = {3306896484, 1013, 1},
+        SantaGiftArgs = {514457962, "ChristmasReward", "BuyItem", 1},
+        
+        -- Codes
+        RedeemCodeArgs = {2073358730} -- code is 2nd arg
+    },
+    
+    -- Potion Mapping
+    Potions = {
+        CommonAttack = { buyId = 1001, drinkSlot = 5 },
+        CommonHealth = { buyId = 1002, drinkSlot = 8 },
+        CommonLuck = { buyId = 1003, drinkSlot = 9 },
+        RareAttack = { buyId = 1004, drinkSlot = 6 },
+        RareHealth = { buyId = 1005, drinkSlot = 4 },
+        RareLuck = { buyId = 1006, drinkSlot = 2 },
+    },
+    
+    -- Redeem Codes List
+    RedeemCodes = {"RAID1212", "CHRISTMAS", "UPD1212", "NEWYEAR"}
+}
+
+----------------------------------------------------------
 -- 🔹 Services
 Config.Players = game:GetService("Players")
 Config.RunService = game:GetService("RunService")
@@ -74,6 +120,8 @@ Config.unloadKey = Enum.KeyCode.End -- Unload script
 -- 🔹 Teleport Settings
 -- Mặc định tắt, chỉ hoạt động khi bạn bật trong menu
 Config.teleportEnabled = true
+Config.teleportMode = "Instant" -- "Tween" hoặc "Instant"
+Config.teleportTweenSpeed = 1 -- Thời gian tween (giây)
 Config.chestTeleportDelay = 0.5 -- Thời gian delay giữa các chest teleport (giây)
 Config.cameraTeleportEnabled = false
 Config.cameraTeleportActive = false
@@ -228,6 +276,10 @@ Config.autoBuyChristmasGiftBoxEnabled = false
 ----------------------------------------------------------
 -- 🔹 Auto Buy Santa Claus Gift
 Config.autoBuySantaClausGiftEnabled = false
+
+----------------------------------------------------------
+-- 🔹 Potion Settings
+Config.potionBuyAndDrinkEnabled = false -- true = mua và sử dụng, false = chỉ sử dụng từ inventory
 
 ----------------------------------------------------------
 -- 🔹 Visuals

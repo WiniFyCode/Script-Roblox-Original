@@ -121,9 +121,21 @@ function Movement.startCameraTeleportInput()
 
             local char = Config.localPlayer.Character
             local hrp = char and char:FindFirstChild("HumanoidRootPart")
+            
             if hrp and Config.cameraTeleportStartPosition then
                 hrp.Anchored = false
-                hrp.CFrame = CFrame.new(Config.cameraTeleportStartPosition)
+                
+                local targetCFrame = CFrame.new(Config.cameraTeleportStartPosition)
+                
+                if Config.teleportMode == "Tween" then
+                    local TweenService = game:GetService("TweenService")
+                    local tweenInfo = TweenInfo.new(Config.teleportTweenSpeed or 1, Enum.EasingStyle.Linear)
+                    local tween = TweenService:Create(hrp, tweenInfo, {CFrame = targetCFrame})
+                    tween:Play()
+                    tween.Completed:Wait()
+                else
+                    hrp.CFrame = targetCFrame
+                end
             elseif hrp then
                 hrp.Anchored = false
             end
@@ -218,7 +230,16 @@ function Movement.startCameraTeleportInput()
             if endHrp then
                 endHrp.Anchored = false
                 if Config.teleportToLastZombie and lastZombiePosition then
-                    endHrp.CFrame = CFrame.new(lastZombiePosition + Vector3.new(0, 5, 0))
+                    local targetCFrame = CFrame.new(lastZombiePosition + Vector3.new(0, 5, 0))
+                    if Config.teleportMode == "Tween" then
+                        local TweenService = game:GetService("TweenService")
+                        local tweenInfo = TweenInfo.new(Config.teleportTweenSpeed or 2, Enum.EasingStyle.Linear)
+                        local tween = TweenService:Create(endHrp, tweenInfo, {CFrame = targetCFrame})
+                        tween:Play()
+                        tween.Completed:Wait()
+                    else
+                        endHrp.CFrame = targetCFrame
+                    end
                 end
             end
 

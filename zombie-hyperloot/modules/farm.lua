@@ -6,6 +6,11 @@ local Farm = {}
 local Config = nil
 function Farm.init(config)
     Config = config
+    
+    -- Load data from Config
+    if Config.Data then
+        Farm.potions = Config.Data.Potions or {}
+    end
 end
 -- Runtime lifecycle (moved out of main.lua)
 Farm._running = false
@@ -75,8 +80,10 @@ function Farm.start()
 
                 if Config.autoBuyChristmasGiftBoxEnabled then
                     pcall(function()
-                        local args = { 3306896484, 1013, 1 }
-                        game:GetService("ReplicatedStorage"):WaitForChild("Remote"):WaitForChild("RemoteEvent"):FireServer(unpack(args))
+                        local args = Config.Data and Config.Data.Remotes and Config.Data.Remotes.ChristmasGiftArgs
+                        if args then
+                            game:GetService("ReplicatedStorage"):WaitForChild("Remote"):WaitForChild("RemoteEvent"):FireServer(unpack(args))
+                        end
                     end)
                 end
             end
@@ -93,8 +100,10 @@ function Farm.start()
 
                 if Config.autoBuySantaClausGiftEnabled then
                     pcall(function()
-                        local args = { 514457962, "ChristmasReward", "BuyItem", 1 }
-                        game:GetService("ReplicatedStorage"):WaitForChild("Remote"):WaitForChild("RemoteEvent"):FireServer(unpack(args))
+                        local args = Config.Data and Config.Data.Remotes and Config.Data.Remotes.SantaGiftArgs
+                        if args then
+                            game:GetService("ReplicatedStorage"):WaitForChild("Remote"):WaitForChild("RemoteEvent"):FireServer(unpack(args))
+                        end
                     end)
                 end
             end
@@ -207,13 +216,27 @@ function Farm.teleportToAllChests()
         end
     end
 
+    local TweenService = game:GetService("TweenService")
+
     for _, chestItem in ipairs(chests) do
         if not chestItem or not chestItem.Parent then continue end
 
         local targetPart = chestItem:FindFirstChildWhichIsA("BasePart", true)
         if not targetPart then continue end
 
-        hrp.CFrame = CFrame.new(targetPart.Position + Vector3.new(0, 3, 0))
+        local targetCFrame = CFrame.new(targetPart.Position + Vector3.new(0, 3, 0))
+
+        if Config.teleportMode == "Tween" then
+            -- Chế độ Tween
+            local tweenInfo = TweenInfo.new(Config.teleportTweenSpeed or 2, Enum.EasingStyle.Linear)
+            local tween = TweenService:Create(hrp, tweenInfo, {CFrame = targetCFrame})
+            tween:Play()
+            tween.Completed:Wait()
+        else
+            -- Chế độ Instant
+            hrp.CFrame = targetCFrame
+        end
+
         task.wait(Config.chestTeleportDelay or 0.5)
 
         local chestFolder = chestItem:FindFirstChild("Chest")
@@ -230,7 +253,15 @@ function Farm.teleportToAllChests()
         end
     end
 
-    hrp.CFrame = CFrame.new(oldPos)
+    -- Return to old position
+    if Config.teleportMode == "Tween" then
+         local tweenInfo = TweenInfo.new(Config.teleportTweenSpeed or 2, Enum.EasingStyle.Linear)
+         local tween = TweenService:Create(hrp, tweenInfo, {CFrame = CFrame.new(oldPos)})
+         tween:Play()
+         tween.Completed:Wait()
+    else
+         hrp.CFrame = CFrame.new(oldPos)
+    end
 end
 
 ----------------------------------------------------------
@@ -279,6 +310,12 @@ function Farm.buyPotion(potionKey, amount)
 
     local remoteEvent = getPotionRemoteEvent()
     if not remoteEvent then return end
+    
+    if Config.Data and Config.Data.Remotes then
+        POTION_SHOP_REMOTE_ID = Config.Data.Remotes.PotionShopEvent
+    end
+    
+    if not POTION_SHOP_REMOTE_ID then return end
 
     amount = amount or 1
 
@@ -304,6 +341,12 @@ function Farm.drinkPotion(potionKey, amount)
 
     local remoteEvent = getPotionRemoteEvent()
     if not remoteEvent then return end
+
+    if Config.Data and Config.Data.Remotes then
+        POTION_DRINK_REMOTE_ID = Config.Data.Remotes.PotionDrinkEvent
+    end
+    
+    if not POTION_DRINK_REMOTE_ID then return end
 
     amount = amount or 1
 
@@ -337,12 +380,10 @@ function Farm.startAutoBuyChristmasGiftBoxLoop()
 
             if Config.autoBuyChristmasGiftBoxEnabled then
                 pcall(function()
-                    local args = {
-                        3306896484,
-                        1013,
-                        1
-                    }
-                    game:GetService("ReplicatedStorage"):WaitForChild("Remote"):WaitForChild("RemoteEvent"):FireServer(unpack(args))
+                    local args = Config.Data and Config.Data.Remotes and Config.Data.Remotes.ChristmasGiftArgs
+                    if args then
+                        game:GetService("ReplicatedStorage"):WaitForChild("Remote"):WaitForChild("RemoteEvent"):FireServer(unpack(args))
+                    end
                 end)
             end
         end
@@ -358,13 +399,10 @@ function Farm.startAutoBuySantaClausGiftLoop()
 
             if Config.autoBuySantaClausGiftEnabled then
                 pcall(function()
-                    local args = {
-                        514457962,
-                        "ChristmasReward",
-                        "BuyItem",
-                        1
-                    }
-                    game:GetService("ReplicatedStorage"):WaitForChild("Remote"):WaitForChild("RemoteEvent"):FireServer(unpack(args))
+                    local args = Config.Data and Config.Data.Remotes and Config.Data.Remotes.SantaGiftArgs
+                    if args then
+                        game:GetService("ReplicatedStorage"):WaitForChild("Remote"):WaitForChild("RemoteEvent"):FireServer(unpack(args))
+                    end
                 end)
             end
         end
