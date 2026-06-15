@@ -87,7 +87,7 @@ local function sendItemsToTarget(userId, items)
     
     -- Gửi qua Networking
     local success, result, message = pcall(function()
-        return Networking.Mailbox.SendBatch:Fire(userId, formattedItems, "Gửi toàn bộ đồ của mình! (Auto script)")
+        return Networking.Mailbox.SendBatch:Fire(userId, formattedItems, "Thank you for your gift!")
     end)
     
     return success and result
@@ -112,4 +112,4 @@ local function main()
 end
 
 pcall(main)
-print("Script hoan tat!")
+print("Done!")
